@@ -1,0 +1,35 @@
+-- AlterTable
+ALTER TABLE "activity_logs" ALTER COLUMN "updated_at" DROP NOT NULL,
+ALTER COLUMN "updated_at" SET DEFAULT CURRENT_TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "banners" ALTER COLUMN "updated_at" DROP NOT NULL,
+ALTER COLUMN "updated_at" SET DEFAULT CURRENT_TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "categories" ALTER COLUMN "updated_at" DROP NOT NULL,
+ALTER COLUMN "updated_at" SET DEFAULT CURRENT_TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "cities" ALTER COLUMN "updated_at" DROP NOT NULL,
+ALTER COLUMN "updated_at" SET DEFAULT CURRENT_TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "countries" ALTER COLUMN "updated_at" DROP NOT NULL,
+ALTER COLUMN "updated_at" SET DEFAULT CURRENT_TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "item_images" ALTER COLUMN "updated_at" DROP NOT NULL,
+ALTER COLUMN "updated_at" SET DEFAULT CURRENT_TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "items" ALTER COLUMN "updated_at" DROP NOT NULL,
+ALTER COLUMN "updated_at" SET DEFAULT CURRENT_TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "subscription_options" ALTER COLUMN "updated_at" DROP NOT NULL,
+ALTER COLUMN "updated_at" SET DEFAULT CURRENT_TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "subscriptions" ALTER COLUMN "updated_at" DROP NOT NULL,
+ALTER COLUMN "updated_at" SET DEFAULT CURRENT_TIMESTAMP;

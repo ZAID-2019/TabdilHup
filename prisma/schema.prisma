@@ -38,21 +38,23 @@ model User {
   gender                    Gender // Gender (MALE or FEMALE)
   role                      UserRoles           @default(USER) // User's role (default is USER)
   status                    UserStatus          @default(ACTIVE) // Account status (default is ACTIVE)
-  phone_number              String // User's phone number
+  phone_number              String? // User's phone number
   profile_picture           String? // URL to profile picture (optional)
   personal_identity_picture String? // URL to personal identity document (optional)
-  birth_date                DateTime // User's date of birth
-  address                   String // User's address
+  birth_date                DateTime            @db.Date // User's date of birth
+  address                   String? // User's address
   city_id                   Int? // Reference to the user's city
   country_id                Int? // Reference to the user's country
   created_at                DateTime            @default(now()) // Timestamp when the user was created
-  updated_at                DateTime            @updatedAt // Automatically updated on each update
+  updated_at                DateTime?           @default(now()) @updatedAt // Automatically updated on each update
   deleted_at                DateTime? // Timestamp when the user was deleted (optional for soft delete)
   ActivityLog               ActivityLog[]       @relation("UserActivityLogs")
   userSubscriptions         userSubscriptions[] @relation("UserSubscriptions")
   Item                      Item[]              @relation("UserItems")
+  city                      City?               @relation(fields: [city_id], references: [id]) // Define the relation
+  country                   Country?            @relation(fields: [country_id], references: [id]) // Define the relation
 
-  @@index([username, email]) // Index on username and email for quick lookups
+  @@index([first_name, last_name, username, email]) // Index on username and email for quick lookups
   @@map("users")
 }
 
@@ -66,7 +68,7 @@ model Category {
   parent_id      Int? // Optional field for hierarchical relationships (ID of the parent category)
   parent         Category?  @relation("CategoryParent", fields: [parent_id], references: [id]) // Self-referencing relation for parent category
   created_at     DateTime   @default(now()) // Timestamp for when the category was created
-  updated_at     DateTime   @updatedAt // Timestamp for the last update to the category
+  updated_at     DateTime?  @default(now()) @updatedAt // Timestamp for the last update to the category
   deleted_at     DateTime? // Optional field for soft deletion, indicating when the category was deleted
   children       Category[] @relation("CategoryParent")
   Item           Item[]
@@ -95,7 +97,7 @@ model Item {
   user        User          @relation("UserItems", fields: [user_id], references: [id]) // Relation to the User model
   is_panner   Boolean       @default(false) // Indicates if the item is pinned or featured for visibility
   created_at  DateTime      @default(now()) // Timestamp of when the item was created
-  updated_at  DateTime      @updatedAt // Timestamp of the last update to the item
+  updated_at  DateTime?     @default(now()) @updatedAt // Timestamp of the last update to the item
   deleted_at  DateTime? // Optional field for soft deletion, indicating when the item was deleted
   itemImages  ItemImage[] // Relationship to itemImage join table, allowing for flexible user-image associations
   ActivityLog ActivityLog[] @relation("ItemsActivityLogs") // Relationship to ActivityLog join table, allowing for tracking item-related activities
@@ -113,7 +115,7 @@ model ItemImage {
   item_id    Int // Foreign key referencing the Item associated with the image
   item       Item      @relation(fields: [item_id], references: [id])
   created_at DateTime  @default(now()) // Timestamp of when the image was uploaded
-  updated_at DateTime  @updatedAt // Timestamp of the last update to the image entry
+  updated_at DateTime? @default(now()) @updatedAt // Timestamp of the last update to the image entry
   deleted_at DateTime? // Optional field for soft deletion, indicating when the association was deleted
 
   @@map("item_images")
@@ -133,7 +135,7 @@ model ActivityLog {
   item_id    Int // Foreign key referencing the Item that was acted upon
   item       Item              @relation("ItemsActivityLogs", fields: [item_id], references: [id]) // Relation to the Item model
   created_at DateTime          @default(now()) // Timestamp for when the activity log entry was created
-  updated_at DateTime          @updatedAt // Timestamp for the last update to the activity log entry
+  updated_at DateTime?         @default(now()) @updatedAt // Timestamp for the last update to the activity log entry
   deleted_at DateTime? // Optional field for soft delete; can be used to mark entries as deleted without removing them from the database
 
   @@map("activity_logs")
@@ -147,7 +149,7 @@ model Banner {
   start_date DateTime // Start date for the banner display
   end_date   DateTime // End date for the banner display
   created_at DateTime  @default(now()) // Timestamp for when the banner was created
-  updated_at DateTime  @updatedAt // Timestamp for the last update to the banner
+  updated_at DateTime? @default(now()) @updatedAt // Timestamp for the last update to the banner
   deleted_at DateTime? // Optional field for soft delete
 
   @@map("banners")
@@ -177,7 +179,7 @@ model Subscription {
   category             SubscriptionsCategories // Enum to categorize the subscription (e.g., REGULAR, SPONSORED)
   status               SubscriptionsStatus // Enum to indicate if the subscription is ACTIVE or INACTIVE
   created_at           DateTime                @default(now()) // Timestamp for when the subscription was created
-  updated_at           DateTime                @updatedAt // Auto-updates the timestamp when the subscription is modified
+  updated_at           DateTime?               @default(now()) @updatedAt // Auto-updates the timestamp when the subscription is modified
   deleted_at           DateTime? // Optional timestamp for soft deletion
   SubscriptionsOptions SubscriptionsOptions[] // Relation to subscription options for this subscription
 
@@ -191,7 +193,7 @@ model SubscriptionsOptions {
   subscriptions_id Int // Foreign key to the related subscription
   subscription     Subscription @relation(fields: [subscriptions_id], references: [id]) // Relationship to the Subscription model
   created_at       DateTime     @default(now()) // Timestamp for when the option was created
-  updated_at       DateTime     @updatedAt // Auto-updated timestamp for when the option was last modified
+  updated_at       DateTime?    @default(now()) @updatedAt // Auto-updated timestamp for when the option was last modified
   deleted_at       DateTime? // Optional timestamp for soft deletion
 
   @@map("subscription_options")
@@ -208,4 +210,31 @@ model userSubscriptions {
   deleted_at       DateTime? // Optional timestamp for soft deletion
 
   @@map("user_subscriptions")
+}
+
+model Country {
+  id         Int       @id @default(autoincrement()) // Unique identifier for the country
+  name_ar    String // Name of the country in Arabic
+  name_en    String // Name of the country in English
+  created_at DateTime  @default(now()) // Timestamp for when the country was created
+  updated_at DateTime? @default(now()) @updatedAt // Timestamp for the last update to the country
+  deleted_at DateTime? // Optional field for soft deletion
+  city       City[] // Relation to the City model
+  User       User[]
+
+  @@map("countries")
+}
+
+model City {
+  id         Int       @id @default(autoincrement()) // Unique identifier for the city
+  name_ar    String // Name of the city in Arabic
+  name_en    String // Name of the city in English
+  country_id Int // Reference to the country where the city is located
+  country    Country   @relation(fields: [country_id], references: [id]) // Relation to the Country model
+  created_at DateTime  @default(now()) // Timestamp for when the city was created
+  updated_at DateTime? @default(now()) @updatedAt // Timestamp for the last update to the city
+  deleted_at DateTime? // Optional field for soft deletion
+  User       User[]
+
+  @@map("cities")
 }
