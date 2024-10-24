@@ -1,5 +1,5 @@
 export class ResponseUtil {
-    static success(message: string, response?: any) {
+    static success(message: string, response?: unknown) {
       return {
         status: 'success',
         message,
@@ -7,7 +7,7 @@ export class ResponseUtil {
       };
     }
   
-    static error(message: string, code?: string, details?: any) {
+    static error(message: string, code?: string, details?: unknown) {
       return {
         status: 'error',
         message,
