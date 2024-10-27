@@ -96,14 +96,16 @@ model Item {
   user_id     Int // Reference to the user
   user        User          @relation("UserItems", fields: [user_id], references: [id]) // Relation to the User model
   is_panner   Boolean       @default(false) // Indicates if the item is pinned or featured for visibility
-  created_at  DateTime      @default(now()) // Timestamp of when the item was created
-  updated_at  DateTime?     @default(now()) @updatedAt // Timestamp of the last update to the item
-  deleted_at  DateTime? // Optional field for soft deletion, indicating when the item was deleted
   itemImages  ItemImage[] // Relationship to itemImage join table, allowing for flexible user-image associations
   ActivityLog ActivityLog[] @relation("ItemsActivityLogs") // Relationship to ActivityLog join table, allowing for tracking item-related activities
   Banner      Banner[]
   category_id Int // Reference to the category associated with the item
   category    Category      @relation(fields: [category_id], references: [id]) // Relation to the Category model
+  Country     Country?      @relation(fields: [country_id], references: [id])
+  City        City?         @relation(fields: [city_id], references: [id])
+  created_at  DateTime      @default(now()) // Timestamp of when the item was created
+  updated_at  DateTime?     @default(now()) @updatedAt // Timestamp of the last update to the item
+  deleted_at  DateTime? // Optional field for soft deletion, indicating when the item was deleted
 
   @@index([title]) // Index on the item title for quick lookups
   @@map("items")
@@ -221,6 +223,7 @@ model Country {
   deleted_at DateTime? // Optional field for soft deletion
   city       City[] // Relation to the City model
   User       User[]
+  Item       Item[]
 
   @@map("countries")
 }
@@ -235,6 +238,7 @@ model City {
   updated_at DateTime? @default(now()) @updatedAt // Timestamp for the last update to the city
   deleted_at DateTime? // Optional field for soft deletion
   User       User[]
+  Item       Item[]
 
   @@map("cities")
 }

@@ -26,7 +26,7 @@ async function bootstrap() {
     credentials: true, // Allow cookies to be sent with requests
     optionsSuccessStatus: 204, // Success status for OPTIONS requests (preflight)
   };
-
+  
   app.enableCors(corsOptions); // Enable CORS with specified options
   await app.listen(3090);
 }
