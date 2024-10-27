@@ -5,6 +5,7 @@ import { PrismaClient } from '@prisma/client';
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     await this.$connect();
+    await this.$executeRaw`SET statement_timeout = 60000`;
   }
 
   async onModuleDestroy() {
