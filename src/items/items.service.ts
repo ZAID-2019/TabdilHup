@@ -68,6 +68,11 @@ export class ItemsService {
 
   async create(data: CreateItemDto): Promise<unknown> {
     try {
+
+
+   
+
+
       const item = await this._prismaService.item.create({
         data: {
           title: data.title,
@@ -77,7 +82,7 @@ export class ItemsService {
           condition: data.condition,
           trade_value: data.trade_value,
           user_id: data.user_id,
-          is_panner: data.is_panner,
+          is_banner: data.is_banner,
           category_id: data.category_id,
         },
       });
@@ -92,19 +97,29 @@ export class ItemsService {
         });
       }
 
-      if (data.is_panner) {
-        const today = new Date();
-        const endDate = new Date(today);
-        endDate.setDate(today.getDate() + 7); // Set end_date to a week from today
+      if (data.is_banner) {
+        // Convert start_date to Date object if it's a string, or default to today's date
+        const startDate = data.start_date ? new Date(data.start_date) : new Date();
+        const [startYear, startMonth, startDay] = startDate.toISOString().split('T')[0].split('-');
+        const formattedStartDate = new Date(`${startYear}-${startMonth}-${startDay}`);
+      
+        // Convert end_date to Date object if it's a string, or default to 7 days after start date
+        const endDate = data.end_date ? new Date(data.end_date) : new Date(formattedStartDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const [endYear, endMonth, endDay] = endDate.toISOString().split('T')[0].split('-');
+        const formattedEndDate = new Date(`${endYear}-${endMonth}-${endDay}`);
+      
+        // Create the banner
         await this._prismaService.banner.create({
           data: {
             item_id: item.id,
             is_active: true,
-            start_date: today,
-            end_date: endDate,
+            start_date: formattedStartDate,
+            end_date: formattedEndDate,
           },
         });
       }
+      
+      
       return ResponseUtil.success('Item Created', item);
     } catch (error) {
       this.logger.error(`Error In Create Item: ${error.message}`, error.stack);
@@ -124,7 +139,7 @@ export class ItemsService {
           condition: data.condition,
           trade_value: data.trade_value,
           user_id: data.user_id,
-          is_panner: data.is_panner,
+          is_banner: data.is_banner,
           category_id: data.category_id,
         },
       });
@@ -178,7 +193,6 @@ export class ItemsService {
     return { message: 'Batch insertion completed' };
   }
 
-
   async createMultiple22(data: CreateItemDto): Promise<unknown> {
     const arabicItems = [
       { title: 'كتاب', description: 'كتاب يحتوي على معلومات ومواضيع مختلفة.' },
@@ -222,7 +236,6 @@ export class ItemsService {
 
     return { message: 'Batch insertion completed' };
   }
-
 
   async createMultiple2(data: CreateItemDto): Promise<unknown> {
     const arabicItems = [
@@ -462,108 +475,108 @@ export class ItemsService {
     ];
     const arabicItems2 = [
       ...arabicItems,
-      { title: "خريطة قديمة", description: "خريطة توضح الطرقات والممرات في البرية." },
-      { title: "مدفع بخاري", description: "مدفع يستخدم للقضاء على المخاطر في المناطق النائية." },
-      { title: "عربة الغجر", description: "عربة صغيرة مخصصة للرحالة والبدو." },
-      { title: "حصان عربي", description: "حصان سريع ومتأقلم مع الصحراء." },
-      { title: "خيمة مسافرين", description: "خيمة خفيفة الوزن وسهلة للنقل." },
-      { title: "فأس", description: "أداة لحفر الأرض أو قطع الأشجار." },
-      { title: "قوس وسهم", description: "أداة للصيد وصنع الأسلحة." },
-      { title: "غذاء مجفف", description: "طعام محفوظ لرحلات الطوال." },
-      { title: "منظار", description: "عدسة مكبرة لمشاهدة مسافات بعيدة." },
-      { title: "حبل متين", description: "حبل يستخدم لأغراض متعددة في المعسكرات." },
-      { title: "علبة إسعافات أولية", description: "مجموعة أدوات لعلاج الإصابات." },
-      { title: "موقد محمول", description: "موقد يستخدم للطهي أثناء التنقل." },
-      { title: "سلة تضم أدوات الصيد", description: "سلة تحتوي على أدوات الصيد الأساسية." },
-      { title: "دليل النجوم", description: "كتاب يعلم كيفية الملاحة باستخدام النجوم." },
-      { title: "حقيبة ظهر", description: "حقيبة لحمل المستلزمات أثناء الرحلات." },
-      { title: "شمسية حماية", description: "أداة لحماية من الشمس أثناء التنقل." },
-      { title: "سترة واقية", description: "سترة توفر الحماية الشخصي." },
-      { title: "كاميرا قديمة", description: "كاميرا لتوثيق المغامرات والتجارب." },
-      { title: "صيد السمك", description: "أدوات لصيد الأسماك من الأنهار أو البحيرات." },
-      { title: "مفتاح أوروبي", description: "أداة تفتح الأبواب المغلقة." },
-      { title: "طاولة قابلة للطي", description: "طاولة خفيفة ومحمولة." },
-      { title: "مقعد خشبي", description: "مقعد للاسترخاء بالقرب من النار." },
-      { title: "علبة أدوات النجارة", description: "أدوات لإنشاء الإصلاحات اللازمة." },
-      { title: "حيوان أليف", description: "رفيق في الرحلات عبر البرية." },
-      { title: "صندوق الكنز", description: "صندوق لحفظ الأشياء الثمينة." },
-      { title: "سفينة شراعية", description: "سفينة تستخدم للتنقل عبر المياه." },
-      { title: "قناع تنفس", description: "قناع لحماية الوجه أثناء العواصف الرملية." },
-      { title: "أضواء ساطعة", description: "أداة لإضاءة الليل." },
-      { title: "صخرة حادة", description: "صخرة تستخدم كأداة قطع." },
-      { title: "قنينة المياه", description: "لحفظ المياه في الرحلات." },
-      { title: "تلسكوب", description: "لرؤية الأجرام السماوية." },
-      { title: "دليل الحيوانات", description: "كتاب يصف أنواع الحيوانات في المنطقة." },
-      { title: "حافظة الطعام", description: "لحفظ الطعام الطازج أثناء التنقل." },
-      { title: "حقيبة أدوات", description: "حقيبة مخصصة لحمل الأدوات اللازمة." },
-      { title: "نقود معدنية", description: "للشراء في المعسكرات." },
-      { title: "جهاز ملاحة", description: "جهاز يساعد في تحديد الاتجاهات." },
-      { title: "ماكينة حلاقة", description: "للحفاظ على مظهر جيد في الرحلات." },
-      { title: "دلو", description: "حاوية لجمع المياه أو نقل الأشياء." },
-      { title: "شجرة خشبية", description: "شفافة تستخدم في بناء الملاجئ." },
-      { title: "مصباح يدوي", description: "للإضاءة في الأماكن المظلمة." },
-      { title: "جوارب صوفية", description: "للحفاظ على القدمين دافئة." },
-      { title: "خريطة مذهلة", description: "خريطة للجغرافيّة المحلية." },
-      { title: "شجرة فواكه", description: "مصدر طبيعي للغذاء." },
-      { title: "مفك براغي", description: "مفتاح لإصلاح المعدات." },
-      { title: "قتال بقبضات", description: "لزيادة المهارات القتالية." },
-      { title: "قارب", description: "للنقل عبر الأنهار والبحيرات." },
-      { title: "قفازات جلدية", description: "لحماية اليدين أثناء العمل الشاق." },
-      { title: "سماد طبيعي", description: "للتربة وتحسين المزروعات." },
-      { title: "منارة", description: "دليل لمساعدة السفن في المياه." },
-      { title: "سفينة تجارية", description: "للنقل التجاري عبر المحيطات." },
-      { title: "بندقية قنص", description: "لصيد الحيوانات الكبيرة." },
-      { title: "سيارة رباعية الدفع", description: "للسير عبر التضاريس الوعرة." },
-      { title: "دلاء رملية", description: "للمشي على الشاطئ." },
-      { title: "معدات طهي", description: "لتحضير الطعام في البرية." },
-      { title: "درع حماية", description: "لحماية جسمك من الأذى." },
-      { title: "جراب سلاح", description: "لحمل السلاح بأمان." },
-      { title: "كشافات النجاح", description: "الأدوات المستخدمة في صيد الأسماك." },
-      { title: "بذور نباتات", description: "لزراعة المحاصيل في المواسم." },
-      { title: "أدوات خاصة لاستكشاف", description: "أدوات تحتاجها لاستكشاف المناطق الجديدة." },
-      { title: "خزينة", description: "لحفظ الأموال والممتلكات الثمينة." },
-      { title: "دليل الطرق", description: "كتاب يحتوي على معلومات عن طرق السير." },
-      { title: "لوحة رسم", description: "لوحة تُستخدم للرسم في الطبيعة." },
-      { title: "كتب تحتوي على نصائح البقاء", description: "كتب تُساعد في كيفية البقاء على قيد الحياة." },
-      { title: "مرافق طبي", description: "للرعاية الطبية في الرحلات." },
-      { title: "فطائر محلية", description: "طعامة تُحضر في المعسكرات." },
-      { title: "كنز دفين", description: "كنز مفقود يتطلب البحث." },
-  ];
-  // console.log({ arabicItems });
-  // console.log({ arabicItems2 });
-  
-  // Example of how you might use this array in your code
+      { title: 'خريطة قديمة', description: 'خريطة توضح الطرقات والممرات في البرية.' },
+      { title: 'مدفع بخاري', description: 'مدفع يستخدم للقضاء على المخاطر في المناطق النائية.' },
+      { title: 'عربة الغجر', description: 'عربة صغيرة مخصصة للرحالة والبدو.' },
+      { title: 'حصان عربي', description: 'حصان سريع ومتأقلم مع الصحراء.' },
+      { title: 'خيمة مسافرين', description: 'خيمة خفيفة الوزن وسهلة للنقل.' },
+      { title: 'فأس', description: 'أداة لحفر الأرض أو قطع الأشجار.' },
+      { title: 'قوس وسهم', description: 'أداة للصيد وصنع الأسلحة.' },
+      { title: 'غذاء مجفف', description: 'طعام محفوظ لرحلات الطوال.' },
+      { title: 'منظار', description: 'عدسة مكبرة لمشاهدة مسافات بعيدة.' },
+      { title: 'حبل متين', description: 'حبل يستخدم لأغراض متعددة في المعسكرات.' },
+      { title: 'علبة إسعافات أولية', description: 'مجموعة أدوات لعلاج الإصابات.' },
+      { title: 'موقد محمول', description: 'موقد يستخدم للطهي أثناء التنقل.' },
+      { title: 'سلة تضم أدوات الصيد', description: 'سلة تحتوي على أدوات الصيد الأساسية.' },
+      { title: 'دليل النجوم', description: 'كتاب يعلم كيفية الملاحة باستخدام النجوم.' },
+      { title: 'حقيبة ظهر', description: 'حقيبة لحمل المستلزمات أثناء الرحلات.' },
+      { title: 'شمسية حماية', description: 'أداة لحماية من الشمس أثناء التنقل.' },
+      { title: 'سترة واقية', description: 'سترة توفر الحماية الشخصي.' },
+      { title: 'كاميرا قديمة', description: 'كاميرا لتوثيق المغامرات والتجارب.' },
+      { title: 'صيد السمك', description: 'أدوات لصيد الأسماك من الأنهار أو البحيرات.' },
+      { title: 'مفتاح أوروبي', description: 'أداة تفتح الأبواب المغلقة.' },
+      { title: 'طاولة قابلة للطي', description: 'طاولة خفيفة ومحمولة.' },
+      { title: 'مقعد خشبي', description: 'مقعد للاسترخاء بالقرب من النار.' },
+      { title: 'علبة أدوات النجارة', description: 'أدوات لإنشاء الإصلاحات اللازمة.' },
+      { title: 'حيوان أليف', description: 'رفيق في الرحلات عبر البرية.' },
+      { title: 'صندوق الكنز', description: 'صندوق لحفظ الأشياء الثمينة.' },
+      { title: 'سفينة شراعية', description: 'سفينة تستخدم للتنقل عبر المياه.' },
+      { title: 'قناع تنفس', description: 'قناع لحماية الوجه أثناء العواصف الرملية.' },
+      { title: 'أضواء ساطعة', description: 'أداة لإضاءة الليل.' },
+      { title: 'صخرة حادة', description: 'صخرة تستخدم كأداة قطع.' },
+      { title: 'قنينة المياه', description: 'لحفظ المياه في الرحلات.' },
+      { title: 'تلسكوب', description: 'لرؤية الأجرام السماوية.' },
+      { title: 'دليل الحيوانات', description: 'كتاب يصف أنواع الحيوانات في المنطقة.' },
+      { title: 'حافظة الطعام', description: 'لحفظ الطعام الطازج أثناء التنقل.' },
+      { title: 'حقيبة أدوات', description: 'حقيبة مخصصة لحمل الأدوات اللازمة.' },
+      { title: 'نقود معدنية', description: 'للشراء في المعسكرات.' },
+      { title: 'جهاز ملاحة', description: 'جهاز يساعد في تحديد الاتجاهات.' },
+      { title: 'ماكينة حلاقة', description: 'للحفاظ على مظهر جيد في الرحلات.' },
+      { title: 'دلو', description: 'حاوية لجمع المياه أو نقل الأشياء.' },
+      { title: 'شجرة خشبية', description: 'شفافة تستخدم في بناء الملاجئ.' },
+      { title: 'مصباح يدوي', description: 'للإضاءة في الأماكن المظلمة.' },
+      { title: 'جوارب صوفية', description: 'للحفاظ على القدمين دافئة.' },
+      { title: 'خريطة مذهلة', description: 'خريطة للجغرافيّة المحلية.' },
+      { title: 'شجرة فواكه', description: 'مصدر طبيعي للغذاء.' },
+      { title: 'مفك براغي', description: 'مفتاح لإصلاح المعدات.' },
+      { title: 'قتال بقبضات', description: 'لزيادة المهارات القتالية.' },
+      { title: 'قارب', description: 'للنقل عبر الأنهار والبحيرات.' },
+      { title: 'قفازات جلدية', description: 'لحماية اليدين أثناء العمل الشاق.' },
+      { title: 'سماد طبيعي', description: 'للتربة وتحسين المزروعات.' },
+      { title: 'منارة', description: 'دليل لمساعدة السفن في المياه.' },
+      { title: 'سفينة تجارية', description: 'للنقل التجاري عبر المحيطات.' },
+      { title: 'بندقية قنص', description: 'لصيد الحيوانات الكبيرة.' },
+      { title: 'سيارة رباعية الدفع', description: 'للسير عبر التضاريس الوعرة.' },
+      { title: 'دلاء رملية', description: 'للمشي على الشاطئ.' },
+      { title: 'معدات طهي', description: 'لتحضير الطعام في البرية.' },
+      { title: 'درع حماية', description: 'لحماية جسمك من الأذى.' },
+      { title: 'جراب سلاح', description: 'لحمل السلاح بأمان.' },
+      { title: 'كشافات النجاح', description: 'الأدوات المستخدمة في صيد الأسماك.' },
+      { title: 'بذور نباتات', description: 'لزراعة المحاصيل في المواسم.' },
+      { title: 'أدوات خاصة لاستكشاف', description: 'أدوات تحتاجها لاستكشاف المناطق الجديدة.' },
+      { title: 'خزينة', description: 'لحفظ الأموال والممتلكات الثمينة.' },
+      { title: 'دليل الطرق', description: 'كتاب يحتوي على معلومات عن طرق السير.' },
+      { title: 'لوحة رسم', description: 'لوحة تُستخدم للرسم في الطبيعة.' },
+      { title: 'كتب تحتوي على نصائح البقاء', description: 'كتب تُساعد في كيفية البقاء على قيد الحياة.' },
+      { title: 'مرافق طبي', description: 'للرعاية الطبية في الرحلات.' },
+      { title: 'فطائر محلية', description: 'طعامة تُحضر في المعسكرات.' },
+      { title: 'كنز دفين', description: 'كنز مفقود يتطلب البحث.' },
+    ];
+    // console.log({ arabicItems });
+    // console.log({ arabicItems2 });
+
+    // Example of how you might use this array in your code
     const batchSize = 1000; // Define the batch size
     const items = [];
     const totalItems = 100; // Total items to insert
 
     // Create all 500,000 item records in memory
     for (let index = 0; index < totalItems; index++) {
-        // Get a random index for the arabicItems array
-        const randomIndex = Math.floor(Math.random() * arabicItems2.length);
-        const { title, description } = arabicItems2[randomIndex]; // Get random item from the array
+      // Get a random index for the arabicItems array
+      const randomIndex = Math.floor(Math.random() * arabicItems2.length);
+      const { title, description } = arabicItems2[randomIndex]; // Get random item from the array
 
-        items.push({
-            ...data,
-            title: title, // Use the Arabic name as title
-            description: description, // Use the Arabic description
-        });
+      items.push({
+        ...data,
+        title: title, // Use the Arabic name as title
+        description: description, // Use the Arabic description
+      });
     }
 
     // Insert items in batches
     for (let i = 0; i < items.length; i += batchSize) {
-        const batch = items.slice(i, i + batchSize); // Get a batch of items
+      const batch = items.slice(i, i + batchSize); // Get a batch of items
 
-        await this._prismaService.item.createMany({
-            data: batch,
-            skipDuplicates: true, // Optional: Skip records with duplicate unique fields
-        });
+      await this._prismaService.item.createMany({
+        data: batch,
+        skipDuplicates: true, // Optional: Skip records with duplicate unique fields
+      });
 
-        console.log(`Inserted batch ${i / batchSize + 1}`);
+      console.log(`Inserted batch ${i / batchSize + 1}`);
     }
 
     return { message: 'Batch insertion completed' };
-}
+  }
 
   // Search for items
   async search(query: string): Promise<unknown> {
@@ -575,14 +588,14 @@ export class ItemsService {
       const itemsPromise = this._prismaService.item.findMany({
         take: limit,
         skip: offset,
-        select:{
-          id:true,
-          title:true,
-          description:true,
-          itemImages:{
-            select:{
-              image_url:true,
-            }
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          itemImages: {
+            select: {
+              image_url: true,
+            },
           },
         },
         where: {

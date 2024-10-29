@@ -34,7 +34,7 @@ export class CreateItemDto {
 
   @IsBoolean()
   @IsOptional()
-  is_panner?: boolean;
+  is_banner?: boolean;
 
   @IsDate()
   @Type(() => Date)
@@ -54,5 +54,15 @@ export class CreateItemDto {
   category_id: number;
 
   @IsArray()
-  image_urls?: string[]; // Array of image URLs to associate with the item
+  image_urls?: string[];
+
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  start_date?: Date;
+
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  end_date?: Date;
 }

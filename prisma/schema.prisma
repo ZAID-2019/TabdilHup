@@ -95,7 +95,7 @@ model Item {
   country_id  Int // Reference to the country where the item is located
   user_id     Int // Reference to the user
   user        User          @relation("UserItems", fields: [user_id], references: [id]) // Relation to the User model
-  is_panner   Boolean       @default(false) // Indicates if the item is pinned or featured for visibility
+  is_banner   Boolean       @default(false) // Indicates if the item is pinned or featured for visibility
   itemImages  ItemImage[] // Relationship to itemImage join table, allowing for flexible user-image associations
   ActivityLog ActivityLog[] @relation("ItemsActivityLogs") // Relationship to ActivityLog join table, allowing for tracking item-related activities
   Banner      Banner[]
@@ -148,8 +148,8 @@ model Banner {
   item_id    Int // Foreign key referencing the associated Item
   item       Item      @relation(fields: [item_id], references: [id]) // Relation to the Item model
   is_active  Boolean   @default(true) // Indicates whether the banner is currently active
-  start_date DateTime // Start date for the banner display
-  end_date   DateTime // End date for the banner display
+  start_date DateTime  @db.Date // Start date for the banner display
+  end_date   DateTime  @db.Date // End date for the banner display
   created_at DateTime  @default(now()) // Timestamp for when the banner was created
   updated_at DateTime? @default(now()) @updatedAt // Timestamp for the last update to the banner
   deleted_at DateTime? // Optional field for soft delete
