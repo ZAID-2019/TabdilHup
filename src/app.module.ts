@@ -5,9 +5,10 @@ import { AuthModule } from './auth/auth.module';
 import { CountriesModule } from './countries/countries.module';
 import { CitiesModule } from './cities/cities.module';
 import { ItemsModule } from './items/items.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
-  imports: [UsersModule, PrismaModule, AuthModule, CountriesModule, CitiesModule, ItemsModule],
+  imports: [UsersModule, PrismaModule, AuthModule, CountriesModule, CitiesModule, ItemsModule, CategoriesModule],
   controllers: [],
   providers: [],
 })
