@@ -6,9 +6,10 @@ import { CountriesModule } from './countries/countries.module';
 import { CitiesModule } from './cities/cities.module';
 import { ItemsModule } from './items/items.module';
 import { CategoriesModule } from './categories/categories.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 
 @Module({
-  imports: [UsersModule, PrismaModule, AuthModule, CountriesModule, CitiesModule, ItemsModule, CategoriesModule],
+  imports: [UsersModule, PrismaModule, AuthModule, CountriesModule, CitiesModule, ItemsModule, CategoriesModule, SubscriptionsModule],
   controllers: [],
   providers: [],
 })

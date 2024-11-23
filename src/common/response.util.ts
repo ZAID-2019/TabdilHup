@@ -1,20 +1,30 @@
 export class ResponseUtil {
-    static success(message: string, response?: unknown) {
+  static success(message: string, response?: unknown, statusCode: number = 200) {
+    if (statusCode === 204) {
+      // For 204 No Content, return only the message and exclude response data
       return {
+        statusCode,
         status: 'success',
         message,
-        response
       };
     }
-  
-    static error(message: string, code?: string, details?: unknown) {
-      return {
-        status: 'error',
-        message,
-        error: {
-          code,
-          details
-        }
-      };
-    }
+    return {
+      statusCode,
+      status: 'success',
+      message,
+      data: response,
+    };
   }
+
+  static error(message: string, code?: string, details?: unknown, statusCode: number = 400) {
+    return {
+      statusCode,
+      status: 'error',
+      message,
+      error: {
+        code,
+        details,
+      },
+    };
+  }
+}

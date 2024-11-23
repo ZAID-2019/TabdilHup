@@ -50,7 +50,12 @@ export class CategoriesService {
       return ResponseUtil.success('Find All Categories', { categories, total });
     } catch (error) {
       this.logger.error(`Error In Find All Categories: ${error.message}`, error.stack);
-      return ResponseUtil.error('An error occurred while searching for Categories', 'FIND_ALL_FAILED', error?.message);
+      return ResponseUtil.error(
+        'An error occurred while searching for Categories',
+        'FIND_ALL_FAILED',
+        error?.message,
+        404,
+      );
     }
   }
 
@@ -78,7 +83,7 @@ export class CategoriesService {
           parent_id: data.parent_id,
         },
       });
-      return ResponseUtil.success('Category Created', category);
+      return ResponseUtil.success('Category Created', category, 201);
     } catch (error) {
       this.logger.error(`Error In Create Category: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while creating category', 'CREATE_FAILED', error?.message);
@@ -101,22 +106,22 @@ export class CategoriesService {
       return ResponseUtil.success('Category Updated', category);
     } catch (error) {
       this.logger.error(`Error In Update Category: ${error.message}`, error.stack);
-      return ResponseUtil.error('An error occurred while updating category', 'UPDATE_FAILED', error?.message);
+      return ResponseUtil.error('An error occurred while updating category', 'UPDATE_FAILED', error?.message , 400);
     }
   }
 
   async remove(id: number): Promise<unknown> {
     try {
-      const category = await this._prismaService.category.update({
+      await this._prismaService.category.update({
         where: { id: Number(id) },
         data: {
           deleted_at: new Date(),
         },
       });
-      return ResponseUtil.success('Category Deleted', category);
+      return ResponseUtil.success('Category deleted successfully', null, 204);
     } catch (error) {
       this.logger.error(`Error In Delete Category: ${error.message}`, error.stack);
-      return ResponseUtil.error('An error occurred while deleting category', 'DELETE_FAILED', error?.message);
+      return ResponseUtil.error('An error occurred while deleting category', 'DELETE_FAILED', error?.message , 400);
     }
   }
 }

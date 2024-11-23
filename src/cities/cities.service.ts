@@ -50,7 +50,19 @@ export class CitiesService {
   async findOne(id: number): Promise<unknown> {
     try {
       const city = await this._prismaService.city.findUnique({
-        where: { id: Number(id) },
+        where: { id: Number(id) , deleted_at: null},
+        select:{
+          id: true,
+          name_ar: true,
+          name_en: true,
+          country: {
+            select: {
+              id: true,
+              name_ar: true,
+              name_en: true,
+            },
+          },
+        }
       });
       return ResponseUtil.success('Find City By ID', city);
     } catch (error) {
