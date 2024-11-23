@@ -47,7 +47,8 @@ export class CategoriesService {
       ]);
 
       this.logger.verbose(`Successfully Retrieved ${categories.length} Categories`);
-      return ResponseUtil.success('Find All Categories', { categories, total });
+      return {categories, total,status: 'success', message: 'Find All Categories'};
+      // return ResponseUtil.success('Find All Categories', categories);
     } catch (error) {
       this.logger.error(`Error In Find All Categories: ${error.message}`, error.stack);
       return ResponseUtil.error(
