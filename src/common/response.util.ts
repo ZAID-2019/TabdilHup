@@ -1,5 +1,5 @@
 export class ResponseUtil {
-  static success(message: string, response?: unknown, statusCode: number = 200) {
+  static success(message: string, data?: unknown, statusCode: number = 200) {
     if (statusCode === 204) {
       // For 204 No Content, return only the message and exclude response data
       return {
@@ -12,7 +12,7 @@ export class ResponseUtil {
       statusCode,
       status: 'success',
       message,
-      data: response,
+      data,
     };
   }
 
