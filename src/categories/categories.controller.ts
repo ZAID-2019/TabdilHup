@@ -10,8 +10,15 @@ export class CategoriesController {
   @Get()
   @ApiOperation({ summary: 'Get all categories' })
   @ApiResponse({ status: 200, description: 'List of categories.' })
-  async findAll(@Query('limit') limit: number = 5000, @Query('offset') offset: number = 0) {
+  async findAll(@Query('limit') limit: number = 1000, @Query('offset') offset: number = 0) {
     return this._categoriesService.findAll(limit, offset);
+  }
+
+  @Get('/sub')
+  @ApiOperation({ summary: 'Get all sub categories' })
+  @ApiResponse({ status: 200, description: 'List of sub categories.' })
+  async findAllSub(@Query('limit') limit: number = 1000, @Query('offset') offset: number = 0) {
+    return this._categoriesService.findAllSub(limit, offset);
   }
 
   @Get(':id')
