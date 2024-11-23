@@ -11,7 +11,7 @@ export class CategoriesService {
 
   async findAll(limit?: number, offset?: number): Promise<unknown> {
     try {
-      limit = Number(limit) || 10;
+      limit = Number(limit) || 1000;
       offset = Number(offset) || 0;
       const [categories, total] = await Promise.all([
         this._prismaService.category.findMany({
@@ -25,17 +25,7 @@ export class CategoriesService {
             description_ar: true,
             description_en: true,
             image_url: true,
-            children: {
-              where: { deleted_at: null },
-              select: {
-                id: true,
-                name_ar: true,
-                name_en: true,
-                description_ar: true,
-                description_en: true,
-                image_url: true,
-              },
-            },
+            parent_id: true,
           },
           orderBy: {
             id: 'desc',
@@ -47,7 +37,48 @@ export class CategoriesService {
       ]);
 
       this.logger.verbose(`Successfully Retrieved ${categories.length} Categories`);
-      return {categories, total,status: 'success', message: 'Find All Categories'};
+      return { categories, total, status: 'success', message: 'Find All Categories' };
+      // return ResponseUtil.success('Find All Categories', categories);
+    } catch (error) {
+      this.logger.error(`Error In Find All Categories: ${error.message}`, error.stack);
+      return ResponseUtil.error(
+        'An error occurred while searching for Categories',
+        'FIND_ALL_FAILED',
+        error?.message,
+        404,
+      );
+    }
+  }
+
+  async findAllSub(limit?: number, offset?: number): Promise<unknown> {
+    try {
+      limit = Number(limit) || 1000;
+      offset = Number(offset) || 0;
+      const [categories, total] = await Promise.all([
+        this._prismaService.category.findMany({
+          where: { deleted_at: null, parent_id: { not: null } },
+          take: limit,
+          skip: offset,
+          select: {
+            id: true,
+            name_ar: true,
+            name_en: true,
+            description_ar: true,
+            description_en: true,
+            image_url: true,
+            parent_id: true,
+          },
+          orderBy: {
+            id: 'desc',
+          },
+        }),
+        this._prismaService.category.count({
+          where: { deleted_at: null },
+        }),
+      ]);
+
+      this.logger.verbose(`Successfully Retrieved ${categories.length} Categories`);
+      return { categories, total, status: 'success', message: 'Find All Sub Categories' };
       // return ResponseUtil.success('Find All Categories', categories);
     } catch (error) {
       this.logger.error(`Error In Find All Categories: ${error.message}`, error.stack);
@@ -65,7 +96,8 @@ export class CategoriesService {
       const category = await this._prismaService.category.findUnique({
         where: { id: Number(id) },
       });
-      return ResponseUtil.success('Find Category By ID', category);
+      return { category, status: 'success', message: 'Find A Category' };
+      // return ResponseUtil.success('Find Category By ID', category);
     } catch (error) {
       this.logger.error(`Error In Find Category By ID: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while searching for category', 'FIND_ONE_FAILED', error?.message);
@@ -104,10 +136,11 @@ export class CategoriesService {
           parent_id: data.parent_id,
         },
       });
-      return ResponseUtil.success('Category Updated', category);
+      return { category, status: 'success', message: 'Category Updated Successfully' };
+      // return ResponseUtil.success('Category Updated', category);
     } catch (error) {
       this.logger.error(`Error In Update Category: ${error.message}`, error.stack);
-      return ResponseUtil.error('An error occurred while updating category', 'UPDATE_FAILED', error?.message , 400);
+      return ResponseUtil.error('An error occurred while updating category', 'UPDATE_FAILED', error?.message, 400);
     }
   }
 
@@ -119,10 +152,11 @@ export class CategoriesService {
           deleted_at: new Date(),
         },
       });
-      return ResponseUtil.success('Category deleted successfully', null, 204);
+      return { status: 'success', message: 'Category Deleted Successfully' };
+      // return ResponseUtil.success('Category deleted successfully', null, 204);
     } catch (error) {
       this.logger.error(`Error In Delete Category: ${error.message}`, error.stack);
-      return ResponseUtil.error('An error occurred while deleting category', 'DELETE_FAILED', error?.message , 400);
+      return ResponseUtil.error('An error occurred while deleting category', 'DELETE_FAILED', error?.message, 400);
     }
   }
 }
