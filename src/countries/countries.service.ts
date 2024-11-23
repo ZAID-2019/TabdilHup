@@ -22,6 +22,13 @@ export class CountriesService {
             id: true,
             name_ar: true,
             name_en: true,
+            city: {
+              select: {
+                id: true,
+                name_ar: true,
+                name_en: true,
+              }
+            }
           },
           orderBy: {
             id: 'desc',
@@ -43,7 +50,19 @@ export class CountriesService {
   async findOne(id: number): Promise<unknown> {
     try {
       const country = await this._prismaService.country.findUnique({
-        where: { id: Number(id) },
+        where: { id: Number(id) , deleted_at: null},
+        select: {
+          id: true,
+          name_ar: true,
+          name_en: true,
+          city: {
+            select: {
+              id: true,
+              name_ar: true,
+              name_en: true,
+            }
+          }
+        }
       });
       return ResponseUtil.success('Find Country By ID', country);
     } catch (error) {
