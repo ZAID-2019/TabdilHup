@@ -13,11 +13,11 @@ enum SubscriptionsStatus {
   // Add other statuses if needed
 }
 
-type SubscriptionOption = {
+interface SubscriptionOption {
   id?: number;
   name_ar: string;
   name_en: string;
-};
+}
 
 export class CreateSubscriptionDTO {
   @IsInt()

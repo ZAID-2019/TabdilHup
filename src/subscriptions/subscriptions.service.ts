@@ -15,7 +15,7 @@ export class SubscriptionsService {
       offset = Number(offset) || 0;
       const [subscriptions, total] = await Promise.all([
         this._prismaService.subscription.findMany({
-          where: { deleted_at: null },
+          where: { deleted_at: null , category: 'REGULAR'},
           take: limit,
           skip: offset,
           select: {
@@ -50,7 +50,8 @@ export class SubscriptionsService {
       ]);
 
       this.logger.verbose(`Successfully Retrieved ${subscriptions.length} Subscriptions`);
-      return ResponseUtil.success('Find All Subscriptions', { subscriptions, total });
+      // return ResponseUtil.success('Find All Subscriptions', { subscriptions, total });
+      return { subscriptions, total, status: 'success', message: 'Find All Subscriptions' };
     } catch (error) {
       this.logger.error(`Error In Find All Subscriptions: ${error.message}`, error.stack);
       return ResponseUtil.error(
@@ -155,8 +156,6 @@ export class SubscriptionsService {
           where: { subscriptions_id: Number(id) },
         });
 
-        console.log({ existingOptions, data });
-
         // Separate the options into "to update" and "to create"
         const existingOptionIds = existingOptions.map((option) => option.id);
         const receivedOptionIds = data.SubscriptionsOptions.map((option: { id?: number }) => option.id).filter(Boolean);
@@ -169,7 +168,7 @@ export class SubscriptionsService {
 
         const toDelete = existingOptionIds.filter((id) => !receivedOptionIds.includes(id));
 
-        console.log({ toUpdate, toCreate, toDelete });
+        // console.log({ toUpdate, toCreate, toDelete });
 
         // Update existing options
         for (const option of toUpdate) {
