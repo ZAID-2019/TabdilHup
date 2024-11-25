@@ -40,7 +40,8 @@ export class CitiesService {
       ]);
 
       this.logger.verbose(`Successfully Retrieved ${cities.length} Cities`);
-      return ResponseUtil.success('Find All Cities', { cities, total });
+      // return ResponseUtil.success('Find All Cities', { cities, total });
+      return { cities, total , status: 'success', message: 'Successfully Retrieved Cities' };
     } catch (error) {
       this.logger.error(`Error In Find All Cities: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while searching for cities', 'FIND_ALL_FAILED', error?.message);
@@ -64,7 +65,8 @@ export class CitiesService {
           },
         }
       });
-      return ResponseUtil.success('Find City By ID', city);
+      // return ResponseUtil.success('Find City By ID', city);
+      return { city, status: 'success', message: 'Successfully Retrieved Cities' };
     } catch (error) {
       this.logger.error(`Error In Find City By ID: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while searching for city', 'FIND_ONE_FAILED', error?.message);
@@ -96,7 +98,8 @@ export class CitiesService {
           name_en: data.name_en,
         },
       });
-      return ResponseUtil.success('City Updated', city);
+      // return ResponseUtil.success('City Updated', city);
+      return { city, status: 'success', message: 'City Updated' };
     } catch (error) {
       this.logger.error(`Error In Update City: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while updating city', 'UPDATE_FAILED', error?.message);
@@ -111,7 +114,8 @@ export class CitiesService {
           deleted_at: new Date(),
         },
       });
-      return ResponseUtil.success('City Deleted', city);
+      // return ResponseUtil.success('City Deleted', city);
+      return { city, status: 'success', message: 'City Deleted' };
     } catch (error) {
       this.logger.error(`Error In Delete City: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while deleting city', 'DELETE_FAILED', error?.message);

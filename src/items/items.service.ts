@@ -47,7 +47,8 @@ export class ItemsService {
       ]);
 
       this.logger.verbose(`Successfully Retrieved ${items.length} Items`);
-      return ResponseUtil.success('Find All Items', { items, total });
+      // return ResponseUtil.success('Find All Items', { items, total });
+      return { items, total, status: 'success', message: 'Find All Items' };
     } catch (error) {
       this.logger.error(`Error In Find All Items: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while searching for items', 'FIND_ALL_FAILED', error?.message);
@@ -59,7 +60,8 @@ export class ItemsService {
       const item = await this._prismaService.item.findUnique({
         where: { id: Number(id) },
       });
-      return ResponseUtil.success('Find Item By ID', item);
+      // return ResponseUtil.success('Find Item By ID', item);
+      return { item, status: 'success', message: 'Find An Items' };
     } catch (error) {
       this.logger.error(`Error In Find Item By ID: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while searching for item', 'FIND_ONE_FAILED', error?.message);
@@ -97,12 +99,14 @@ export class ItemsService {
         const startDate = data.start_date ? new Date(data.start_date) : new Date();
         const [startYear, startMonth, startDay] = startDate.toISOString().split('T')[0].split('-');
         const formattedStartDate = new Date(`${startYear}-${startMonth}-${startDay}`);
-      
+
         // Convert end_date to Date object if it's a string, or default to 7 days after start date
-        const endDate = data.end_date ? new Date(data.end_date) : new Date(formattedStartDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const endDate = data.end_date
+          ? new Date(data.end_date)
+          : new Date(formattedStartDate.getTime() + 7 * 24 * 60 * 60 * 1000);
         const [endYear, endMonth, endDay] = endDate.toISOString().split('T')[0].split('-');
         const formattedEndDate = new Date(`${endYear}-${endMonth}-${endDay}`);
-      
+
         // Create the banner
         await this._prismaService.banner.create({
           data: {
@@ -113,9 +117,9 @@ export class ItemsService {
           },
         });
       }
-      
-      
-      return ResponseUtil.success('Item Created', item);
+
+      // return ResponseUtil.success('Item Created', item);
+      return { item, status: 'success', message: 'Item Created' };
     } catch (error) {
       this.logger.error(`Error In Create Item: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while creating item', 'CREATE_FAILED', error?.message);
@@ -138,7 +142,8 @@ export class ItemsService {
           category_id: data.category_id,
         },
       });
-      return ResponseUtil.success('Item Updated', item);
+      // return ResponseUtil.success('Item Updated', item);
+      return { item, status: 'success', message: 'Item Updated' };
     } catch (error) {
       this.logger.error(`Error In Update Item: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while updating item', 'UPDATE_FAILED', error?.message);
@@ -153,7 +158,8 @@ export class ItemsService {
           deleted_at: new Date(),
         },
       });
-      return ResponseUtil.success('Item Deleted', item);
+      // return ResponseUtil.success('Item Deleted', item);
+      return { item, status: 'success', message: 'Item Deleted' };
     } catch (error) {
       this.logger.error(`Error In Delete Item: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while deleting item', 'DELETE_FAILED', error?.message);
@@ -614,7 +620,8 @@ export class ItemsService {
       const duration = Date.now() - startTime;
       this.logger.verbose(`Search operation took ${duration} ms`);
       this.logger.verbose(`Successfully Retrieved ${items.length} Items`);
-      return ResponseUtil.success('Search Items', { items, total });
+      // return ResponseUtil.success('Search Items', { items, total });
+      return { items, total,status: 'success', message: 'Item Deleted' };
     } catch (error) {
       this.logger.error(`Error In Search Items: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while searching for items', 'SEARCH_FAILED', error?.message);
