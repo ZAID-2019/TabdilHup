@@ -23,6 +23,21 @@ export class ItemsService {
             id: true,
             title: true,
             description: true,
+            trade_value: true,
+            condition: true,
+            is_banner: true,
+            category_id: true,
+            country_id: true,
+            city_id: true,
+            City: { select: { id: true, name_ar: true, name_en: true } },
+            Country: { select: { id: true, name_ar: true, name_en: true } },
+            category: {
+              select: {
+                id: true,
+                name_ar: true,
+                name_en: true,
+              },
+            },
             itemImages: {
               select: {
                 id: true,
@@ -593,6 +608,22 @@ export class ItemsService {
           id: true,
           title: true,
           description: true,
+          trade_value: true,
+          condition: true,
+          is_banner: true,
+          category_id: true,
+          country_id: true,
+          city_id: true,
+          user_id: true,
+          City: { select: { id: true, name_ar: true, name_en: true } },
+          Country: { select: { id: true, name_ar: true, name_en: true } },
+          category: {
+            select: {
+              id: true,
+              name_ar: true,
+              name_en: true,
+            },
+          },
           itemImages: {
             select: {
               image_url: true,
@@ -621,7 +652,7 @@ export class ItemsService {
       this.logger.verbose(`Search operation took ${duration} ms`);
       this.logger.verbose(`Successfully Retrieved ${items.length} Items`);
       // return ResponseUtil.success('Search Items', { items, total });
-      return { items, total,status: 'success', message: 'Item Deleted' };
+      return { items, total, status: 'success', message: 'Item Deleted' };
     } catch (error) {
       this.logger.error(`Error In Search Items: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while searching for items', 'SEARCH_FAILED', error?.message);
