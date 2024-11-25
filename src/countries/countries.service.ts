@@ -40,7 +40,8 @@ export class CountriesService {
       ]);
 
       this.logger.verbose(`Successfully Retrieved ${countries.length} Countries`);
-      return ResponseUtil.success('Find All Countries', { countries, total });
+      // return ResponseUtil.success('Find All Countries', { countries, total });
+      return { countries, total , status: 'success', message: 'Successfully Retrieved Countries' };
     } catch (error) {
       this.logger.error(`Error In Find All Countries: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while searching for countries', 'FIND_ALL_FAILED', error?.message);
@@ -64,7 +65,8 @@ export class CountriesService {
           }
         }
       });
-      return ResponseUtil.success('Find Country By ID', country);
+      // return ResponseUtil.success('Find Country By ID', country);
+      return { country, status: 'success', message: 'Successfully Retrieved Country' };
     } catch (error) {
       this.logger.error(`Error In Find Country By ID: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while searching for country', 'FIND_ONE_FAILED', error?.message);
@@ -79,7 +81,8 @@ export class CountriesService {
           name_en: data.name_en,
         },
       });
-      return ResponseUtil.success('Country Created', country);
+      // return ResponseUtil.success('Country Created', country);
+      return { country, status: 'success', message: 'Country Created' };
     } catch (error) {
       this.logger.error(`Error In Create Country: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while creating country', 'CREATE_FAILED', error?.message);
@@ -95,7 +98,8 @@ export class CountriesService {
           name_en: data.name_en,
         },
       });
-      return ResponseUtil.success('Country Updated', country);
+      // return ResponseUtil.success('Country Updated', country);
+      return { country, status: 'success', message: 'Country Updated' };
     } catch (error) {
       this.logger.error(`Error In Update Country: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while updating country', 'UPDATE_FAILED', error?.message);
@@ -110,7 +114,8 @@ export class CountriesService {
           deleted_at: new Date(),
         },
       });
-      return ResponseUtil.success('Country Deleted', country);
+      // return ResponseUtil.success('Country Deleted', country);
+      return { country, status: 'success', message: 'Country Deleted' };
     } catch (error) {
       this.logger.error(`Error In Delete Country: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while deleting country', 'DELETE_FAILED', error?.message);
