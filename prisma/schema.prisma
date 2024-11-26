@@ -29,49 +29,52 @@ enum Gender {
 }
 
 model User {
-  id                        Int                 @id @default(autoincrement()) // Unique user ID
-  first_name                String // User's first name
-  last_name                 String // User's last name
-  username                  String              @unique // Unique username
-  email                     String              @unique // Unique email address
-  password                  String // Hashed password
-  gender                    Gender // Gender (MALE or FEMALE)
-  role                      UserRoles           @default(USER) // User's role (default is USER)
-  status                    UserStatus          @default(ACTIVE) // Account status (default is ACTIVE)
-  phone_number              String? // User's phone number
-  profile_picture           String? // URL to profile picture (optional)
-  personal_identity_picture String? // URL to personal identity document (optional)
-  birth_date                DateTime            @db.Date // User's date of birth
-  address                   String? // User's address
-  city_id                   Int? // Reference to the user's city
-  country_id                Int? // Reference to the user's country
-  created_at                DateTime            @default(now()) // Timestamp when the user was created
-  updated_at                DateTime?           @default(now()) @updatedAt // Automatically updated on each update
-  deleted_at                DateTime? // Timestamp when the user was deleted (optional for soft delete)
-  ActivityLog               ActivityLog[]       @relation("UserActivityLogs")
-  userSubscriptions         userSubscriptions[] @relation("UserSubscriptions")
-  Item                      Item[]              @relation("UserItems")
-  city                      City?               @relation(fields: [city_id], references: [id]) // Define the relation
-  country                   Country?            @relation(fields: [country_id], references: [id]) // Define the relation
+  id                                  Int                 @id @default(autoincrement()) // Unique user ID
+  first_name                          String // User's first name
+  last_name                           String // User's last name
+  username                            String              @unique // Unique username
+  email                               String              @unique // Unique email address
+  password                            String // Hashed password
+  gender                              Gender // Gender (MALE or FEMALE)
+  role                                UserRoles           @default(USER) // User's role (default is USER)
+  status                              UserStatus          @default(ACTIVE) // Account status (default is ACTIVE)
+  phone_number                        String? // User's phone number
+  profile_picture                     String? // URL to profile picture (optional)
+  profile_picture_public_id           String? // To store Cloudinary public_id for managing images
+  personal_identity_picture           String? // URL to personal identity document (optional)
+  personal_identity_picture_public_id String? // To store Cloudinary public_id for managing images
+  birth_date                          DateTime            @db.Date // User's date of birth
+  address                             String? // User's address
+  city_id                             Int? // Reference to the user's city
+  country_id                          Int? // Reference to the user's country
+  created_at                          DateTime            @default(now()) // Timestamp when the user was created
+  updated_at                          DateTime?           @default(now()) @updatedAt // Automatically updated on each update
+  deleted_at                          DateTime? // Timestamp when the user was deleted (optional for soft delete)
+  ActivityLog                         ActivityLog[]       @relation("UserActivityLogs")
+  userSubscriptions                   userSubscriptions[] @relation("UserSubscriptions")
+  Item                                Item[]              @relation("UserItems")
+  city                                City?               @relation(fields: [city_id], references: [id]) // Define the relation
+  country                             Country?            @relation(fields: [country_id], references: [id]) // Define the relation
 
   @@index([first_name, last_name, username, email]) // Index on username and email for quick lookups
   @@map("users")
 }
 
 model Category {
-  id             Int        @id @default(autoincrement()) // Unique identifier for the category, automatically incremented
-  name_ar        String // Name of the category in Arabic
-  name_en        String // Name of the category in English
-  description_en String // Description of the category in English
-  description_ar String // Description of the category in Arabic
-  image_url      String // URL of the category image, useful for display purposes
-  parent_id      Int? // Optional field for hierarchical relationships (ID of the parent category)
-  parent         Category?  @relation("CategoryParent", fields: [parent_id], references: [id]) // Self-referencing relation for parent category
-  created_at     DateTime   @default(now()) // Timestamp for when the category was created
-  updated_at     DateTime?  @default(now()) @updatedAt // Timestamp for the last update to the category
-  deleted_at     DateTime? // Optional field for soft deletion, indicating when the category was deleted
-  children       Category[] @relation("CategoryParent")
-  Item           Item[]
+  id              Int        @id @default(autoincrement()) // Unique identifier for the category, automatically incremented
+  name_ar         String // Name of the category in Arabic
+  name_en         String // Name of the category in English
+  description_en  String // Description of the category in English
+  description_ar  String // Description of the category in Arabic
+  image_url       String? // URL of the category image, useful for display purposes
+  image_public_id String? // To store Cloudinary public_id for managing images
+  parent_id       Int? // Optional field for hierarchical relationships (ID of the parent category)
+  parent          Category?  @relation("CategoryParent", fields: [parent_id], references: [id]) // Self-referencing relation for parent category
+  created_at      DateTime   @default(now()) // Timestamp for when the category was created
+  updated_at      DateTime?  @default(now()) @updatedAt // Timestamp for the last update to the category
+  deleted_at      DateTime? // Optional field for soft deletion, indicating when the category was deleted
+  children        Category[] @relation("CategoryParent")
+  Item            Item[]
 
   @@map("categories")
 }
@@ -112,13 +115,14 @@ model Item {
 }
 
 model ItemImage {
-  id         Int       @id @default(autoincrement()) // Unique identifier for the image
-  image_url  String // URL of the image
-  item_id    Int // Foreign key referencing the Item associated with the image
-  item       Item      @relation(fields: [item_id], references: [id])
-  created_at DateTime  @default(now()) // Timestamp of when the image was uploaded
-  updated_at DateTime? @default(now()) @updatedAt // Timestamp of the last update to the image entry
-  deleted_at DateTime? // Optional field for soft deletion, indicating when the association was deleted
+  id              Int       @id @default(autoincrement()) // Unique identifier for the image
+  image_url       String // URL of the image
+  image_public_id String? // To store Cloudinary public_id for managing images
+  item_id         Int // Foreign key referencing the Item associated with the image
+  item            Item      @relation(fields: [item_id], references: [id])
+  created_at      DateTime  @default(now()) // Timestamp of when the image was uploaded
+  updated_at      DateTime? @default(now()) @updatedAt // Timestamp of the last update to the image entry
+  deleted_at      DateTime? // Optional field for soft deletion, indicating when the association was deleted
 
   @@map("item_images")
 }
@@ -176,6 +180,7 @@ model Subscription {
   description_ar       String // Description of the subscription in Arabic
   description_en       String // Description of the subscription in English
   image_url            String // URL of the image associated with the subscription
+  image_public_id      String? // To store Cloudinary public_id for managing images
   price                Decimal                 @default(0) @db.Decimal(10, 2) // Regular price of the subscription
   offer_price          Decimal                 @default(0) @db.Decimal(10, 2) // Discounted or promotional price for the subscription
   category             SubscriptionsCategories // Enum to categorize the subscription (e.g., REGULAR, SPONSORED)
