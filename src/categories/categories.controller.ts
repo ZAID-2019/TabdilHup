@@ -21,6 +21,17 @@ export class CategoriesController {
     return this._categoriesService.findAllSub(limit, offset);
   }
 
+  @Get('/sub/:id')
+  @ApiOperation({ summary: 'Get all sub categories By Category ID' })
+  @ApiResponse({ status: 200, description: 'List of sub categories.' })
+  async findAllSubByCategory(
+    @Param('id') id: number,
+    @Query('limit') limit: number = 1000,
+    @Query('offset') offset: number = 0,
+  ) {
+    return this._categoriesService.findAllSubByCategory(id, limit, offset);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a category by ID' })
   @ApiResponse({ status: 200, description: 'Category found.' })
