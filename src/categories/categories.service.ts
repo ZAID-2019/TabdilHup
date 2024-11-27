@@ -91,6 +91,45 @@ export class CategoriesService {
     }
   }
 
+  async findAllSubByCategory(id: number, limit?: number, offset?: number): Promise<unknown> {
+    try {
+      limit = Number(limit) || 1000;
+      offset = Number(offset) || 0;
+      const [categories, total] = await Promise.all([
+        this._prismaService.category.findMany({
+          where: { deleted_at: null, parent_id:Number(id) },
+          take: limit,
+          skip: offset,
+          select: {
+            id: true,
+            name_ar: true,
+            name_en: true,
+            description_ar: true,
+            description_en: true,
+            image_url: true,
+            parent_id: true,
+          },
+          orderBy: {
+            id: 'desc',
+          },
+        }),
+        this._prismaService.category.count({
+          where: { deleted_at: null },
+        }),
+      ]);
+      this.logger.verbose(`Successfully Retrieved ${categories.length} Categories`);
+      return { categories, total, status: 'success', message: 'Find All Sub Categories' };
+    } catch (error) {
+      this.logger.error(`Error In Find All Categories: ${error.message}`, error.stack);
+      return ResponseUtil.error(
+        'An error occurred while searching for Categories',
+        'FIND_ALL_FAILED',
+        error?.message,
+        404,
+      );
+    }
+  }
+
   async findOne(id: number): Promise<unknown> {
     try {
       const category = await this._prismaService.category.findUnique({
