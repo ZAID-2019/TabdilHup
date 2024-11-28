@@ -15,6 +15,15 @@ export class ItemsController {
     return this._itemsService.findAll(limit, offset);
   }
 
+
+  @Get('/banners')
+  @ApiOperation({ summary: 'Get all items' })
+  @ApiResponse({ status: 200, description: 'List of items.' })
+  @Get()
+  async findAllBanners(@Query('limit') limit: number = 10, @Query('offset') offset: number = 0) {
+    return this._itemsService.findAllBanners(limit, offset);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a item by ID' })
   @ApiResponse({ status: 200, description: 'City found.' })

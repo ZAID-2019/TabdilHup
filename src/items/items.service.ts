@@ -16,7 +16,7 @@ export class ItemsService {
       offset = Number(offset) || 0;
       const [items, total] = await Promise.all([
         this._prismaService.item.findMany({
-          where: { deleted_at: null },
+          where: { deleted_at: null, is_banner: false },
           take: limit,
           skip: offset,
           select: {
@@ -28,6 +28,67 @@ export class ItemsService {
             is_banner: true,
             category_id: true,
             country_id: true,
+            city_id: true,
+            City: { select: { id: true, name_ar: true, name_en: true } },
+            Country: { select: { id: true, name_ar: true, name_en: true } },
+            category: {
+              select: {
+                id: true,
+                name_ar: true,
+                name_en: true,
+              },
+            },
+            itemImages: {
+              select: {
+                id: true,
+                image_url: true,
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                first_name: true,
+                last_name: true,
+              },
+            },
+          },
+          orderBy: {
+            id: 'desc',
+          },
+        }),
+        this._prismaService.item.count({
+          where: { deleted_at: null },
+        }),
+      ]);
+
+      this.logger.verbose(`Successfully Retrieved ${items.length} Items`);
+      // return ResponseUtil.success('Find All Items', { items, total });
+      return { items, total, status: 'success', message: 'Find All Items' };
+    } catch (error) {
+      this.logger.error(`Error In Find All Items: ${error.message}`, error.stack);
+      return ResponseUtil.error('An error occurred while searching for items', 'FIND_ALL_FAILED', error?.message);
+    }
+  }
+
+  async findAllBanners(limit?: number, offset?: number): Promise<unknown> {
+    try {
+      limit = Number(limit) || 10;
+      offset = Number(offset) || 0;
+      const [items, total] = await Promise.all([
+        this._prismaService.item.findMany({
+          where: { deleted_at: null, is_banner: true },
+          take: limit,
+          skip: offset,
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            trade_value: true,
+            condition: true,
+            is_banner: true,
+            category_id: true,
+            country_id: true,
+            Banner: { select: { id: true, start_date: true, end_date: true, is_active: true } },
             city_id: true,
             City: { select: { id: true, name_ar: true, name_en: true } },
             Country: { select: { id: true, name_ar: true, name_en: true } },
