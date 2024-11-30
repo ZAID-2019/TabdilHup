@@ -179,7 +179,7 @@ model Subscription {
   title_en             String // Title of the subscription in English
   description_ar       String // Description of the subscription in Arabic
   description_en       String // Description of the subscription in English
-  image_url            String // URL of the image associated with the subscription
+  image_url            String? // URL of the image associated with the subscription
   image_public_id      String? // To store Cloudinary public_id for managing images
   price                Decimal                 @default(0) @db.Decimal(10, 2) // Regular price of the subscription
   offer_price          Decimal                 @default(0) @db.Decimal(10, 2) // Discounted or promotional price for the subscription

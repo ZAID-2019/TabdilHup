@@ -135,6 +135,40 @@ export class ItemsService {
     try {
       const item = await this._prismaService.item.findUnique({
         where: { id: Number(id) },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          trade_value: true,
+          condition: true,
+          is_banner: true,
+          category_id: true,
+          country_id: true,
+          city_id: true,
+          City: { select: { id: true, name_ar: true, name_en: true } },
+          Country: { select: { id: true, name_ar: true, name_en: true } },
+          Banner: { select: { id: true, start_date: true, end_date: true, is_active: true } },
+          category: {
+            select: {
+              id: true,
+              name_ar: true,
+              name_en: true,
+            },
+          },
+          itemImages: {
+            select: {
+              id: true,
+              image_url: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              first_name: true,
+              last_name: true,
+            },
+          },
+        },
       });
       // return ResponseUtil.success('Find Item By ID', item);
       return { item, status: 'success', message: 'Find An Items' };
@@ -203,6 +237,93 @@ export class ItemsService {
   }
 
   async update(id: number, data: CreateItemDto): Promise<unknown> {
+    try {
+      // Update the main item details
+      await this._prismaService.item.update({
+        where: { id: Number(id) },
+        data: {
+          title: data.title,
+          description: data.description,
+          country_id: data.country_id,
+          city_id: data.city_id,
+          condition: data.condition,
+          trade_value: data.trade_value,
+          user_id: data.user_id,
+          is_banner: data.is_banner,
+          category_id: data.category_id,
+        },
+      });
+  
+      // Handle Images
+      if (data.image_urls && data.image_urls.length > 0) {
+        // Fetch existing images for the item
+        const existingImages = await this._prismaService.itemImage.findMany({
+          where: { item_id: Number(id) },
+        });
+  
+        const existingImageUrls = existingImages.map((image) => image.image_url);
+        const toCreate = data.image_urls.filter((url) => !existingImageUrls.includes(url));
+        const toDelete = existingImageUrls.filter((url) => !data.image_urls.includes(url));
+  
+        // Delete unused images
+        if (toDelete.length > 0) {
+          await this._prismaService.itemImage.deleteMany({
+            where: { image_url: { in: toDelete }, item_id: Number(id) },
+          });
+        }
+  
+        // Add new images
+        if (toCreate.length > 0) {
+          await this._prismaService.itemImage.createMany({
+            data: toCreate.map((url) => ({
+              image_url: url,
+              item_id: Number(id),
+            })),
+          });
+        }
+      }
+  
+      // // Handle Banner Updates (Only update if banner exists)
+      // if (data.is_banner) {
+      //   const existingBanner = await this._prismaService.banner.findU({
+      //     where: { item_id: Number(id) },
+      //   });
+  
+      //   if (existingBanner) {
+      //     const startDate = data.start_date ? new Date(data.start_date) : existingBanner.start_date;
+      //     const endDate = data.end_date
+      //       ? new Date(data.end_date)
+      //       : new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+  
+      //     await this._prismaService.banner.update({
+      //       where: { id: existingBanner.id },
+      //       data: {
+      //         start_date: startDate,
+      //         end_date: endDate,
+      //         is_active: true,
+      //       },
+      //     });
+      //   }
+      // }
+  
+      // Retrieve the updated item with its relationships
+      // const result = await this._prismaService.item.findUnique({
+      //   where: { id: Number(id) },
+      //   include: {
+      //     itemImages: true,
+      //     banner: true,
+      //   },
+      // });
+      const result = await this.findOne(Number(id));
+      return ResponseUtil.success('Item updated successfully', result);
+    } catch (error) {
+      this.logger.error(`Error in updating item: ${error.message}`, error.stack);
+      return ResponseUtil.error('An error occurred while updating the item', 'UPDATE_FAILED', error?.message);
+    }
+  }
+  
+
+  async update2(id: number, data: CreateItemDto): Promise<unknown> {
     try {
       const item = await this._prismaService.item.update({
         where: { id: Number(id) },

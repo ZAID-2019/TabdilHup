@@ -89,7 +89,8 @@ export class SubscriptionsService {
           },
         },
       });
-      return ResponseUtil.success('Find subscription By ID', subscription);
+      // return ResponseUtil.success('Find subscription By ID', subscription);
+      return { subscription, status: 'success', message: 'Find Subscriptions' };
     } catch (error) {
       this.logger.error(`Error In Find subscription By ID: ${error.message}`, error.stack);
       return ResponseUtil.error(
@@ -108,7 +109,6 @@ export class SubscriptionsService {
           title_en: data.title_en,
           description_ar: data.description_ar,
           description_en: data.description_en,
-          image_url: data.image_url,
           price: data.price,
           offer_price: data.offer_price,
           category: data.category,

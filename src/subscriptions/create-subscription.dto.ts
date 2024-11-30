@@ -36,7 +36,8 @@ export class CreateSubscriptionDTO {
   description_en: string; // Description of the subscription in English
 
   @IsString()
-  image_url: string; // URL of the image associated with the subscription
+  @IsOptional()
+  image_url?: string; // URL of the image associated with the subscription
 
   @IsDecimal()
   price: number; // Regular price of the subscription
