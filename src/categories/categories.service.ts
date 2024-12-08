@@ -7,7 +7,7 @@ import { CreateCategoryDto } from './create-category.dto';
 export class CategoriesService {
   constructor(private readonly _prismaService: PrismaService) {}
 
-  private readonly logger = new Logger(CategoriesService.name); // Initializes logger with the class name
+  private readonly logger = new Logger(CategoriesService.name);
 
   async findAll(limit?: number, offset?: number): Promise<unknown> {
     try {
@@ -28,7 +28,7 @@ export class CategoriesService {
             parent_id: true,
           },
           orderBy: {
-            id: 'desc',
+            created_at: 'desc',
           },
         }),
         this._prismaService.category.count({
@@ -69,7 +69,7 @@ export class CategoriesService {
             parent_id: true,
           },
           orderBy: {
-            id: 'desc',
+            created_at: 'desc',
           },
         }),
         this._prismaService.category.count({
@@ -91,13 +91,13 @@ export class CategoriesService {
     }
   }
 
-  async findAllSubByCategory(id: number, limit?: number, offset?: number): Promise<unknown> {
+  async findAllSubByCategory(id: string, limit?: number, offset?: number): Promise<unknown> {
     try {
       limit = Number(limit) || 1000;
       offset = Number(offset) || 0;
       const [categories, total] = await Promise.all([
         this._prismaService.category.findMany({
-          where: { deleted_at: null, parent_id:Number(id) },
+          where: { deleted_at: null, parent_id:id },
           take: limit,
           skip: offset,
           select: {
@@ -110,7 +110,7 @@ export class CategoriesService {
             parent_id: true,
           },
           orderBy: {
-            id: 'desc',
+            created_at: 'desc',
           },
         }),
         this._prismaService.category.count({
@@ -130,10 +130,10 @@ export class CategoriesService {
     }
   }
 
-  async findOne(id: number): Promise<unknown> {
+  async findOne(id: string): Promise<unknown> {
     try {
       const category = await this._prismaService.category.findUnique({
-        where: { id: Number(id) },
+        where: { id: id },
       });
       return { category, status: 'success', message: 'Find A Category' };
       // return ResponseUtil.success('Find Category By ID', category);
@@ -162,10 +162,10 @@ export class CategoriesService {
     }
   }
 
-  async update(id: number, data: CreateCategoryDto): Promise<unknown> {
+  async update(id: string, data: CreateCategoryDto): Promise<unknown> {
     try {
       const category = await this._prismaService.category.update({
-        where: { id: Number(id) },
+        where: { id: id },
         data: {
           name_ar: data.name_ar,
           name_en: data.name_en,
@@ -183,10 +183,10 @@ export class CategoriesService {
     }
   }
 
-  async remove(id: number): Promise<unknown> {
+  async remove(id: string): Promise<unknown> {
     try {
       await this._prismaService.category.update({
-        where: { id: Number(id) },
+        where: { id: id },
         data: {
           deleted_at: new Date(),
         },

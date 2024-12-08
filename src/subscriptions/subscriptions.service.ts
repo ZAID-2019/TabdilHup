@@ -41,7 +41,7 @@ export class SubscriptionsService {
             },
           },
           orderBy: {
-            id: 'desc',
+            created_at: 'desc',
           },
         }),
         this._prismaService.subscription.count({
@@ -62,10 +62,10 @@ export class SubscriptionsService {
     }
   }
 
-  async findOne(id: number): Promise<unknown> {
+  async findOne(id: string): Promise<unknown> {
     try {
       const subscription = await this._prismaService.subscription.findUnique({
-        where: { id: Number(id) , deleted_at: null},
+        where: { id: id , deleted_at: null},
         select: {
           id: true,
           title_ar: true,
@@ -132,17 +132,16 @@ export class SubscriptionsService {
     }
   }
 
-  async update(id: number, data: CreateSubscriptionDTO): Promise<unknown> {
+  async update(id: string, data: CreateSubscriptionDTO): Promise<unknown> {
     try {
       // Update the main subscription details
       await this._prismaService.subscription.update({
-        where: { id: Number(id) },
+        where: { id: id },
         data: {
           title_ar: data.title_ar,
           title_en: data.title_en,
           description_ar: data.description_ar,
           description_en: data.description_en,
-          image_url: data.image_url,
           price: data.price,
           offer_price: data.offer_price,
           category: data.category,
@@ -152,34 +151,34 @@ export class SubscriptionsService {
 
       if (data.SubscriptionsOptions && data.SubscriptionsOptions.length > 0) {
         // Fetch existing options for the subscription
-        const existingOptions = await this._prismaService.subscriptionsOptions.findMany({
-          where: { subscriptions_id: Number(id) },
-        });
+        // const existingOptions = await this._prismaService.subscriptionsOptions.findMany({
+        //   where: { subscriptions_id: id },
+        // });
 
         // Separate the options into "to update" and "to create"
-        const existingOptionIds = existingOptions.map((option) => option.id);
-        const receivedOptionIds = data.SubscriptionsOptions.map((option: { id?: number }) => option.id).filter(Boolean);
+        // const existingOptionIds = existingOptions.map((option) => option.id);
+        // const receivedOptionIds = data.SubscriptionsOptions.map((option: { id?: string }) => option.id).filter(Boolean);
 
-        const toUpdate = data.SubscriptionsOptions.filter(
-          (option: { id?: number }) => option.id && existingOptionIds.includes(option.id),
-        );
+        // const toUpdate = data.SubscriptionsOptions.filter(
+        //   (option: { id?: number }) => option.id && existingOptionIds.includes(option.id.toString()),
+        // );
 
         const toCreate = data.SubscriptionsOptions.filter((option: { id?: number }) => !option.id);
 
-        const toDelete = existingOptionIds.filter((id) => !receivedOptionIds.includes(id));
+        // const toDelete = existingOptionIds.filter((id) => !receivedOptionIds.includes(id));
 
         // console.log({ toUpdate, toCreate, toDelete });
 
         // Update existing options
-        for (const option of toUpdate) {
-          await this._prismaService.subscriptionsOptions.update({
-            where: { id: option.id },
-            data: {
-              name_ar: option.name_ar,
-              name_en: option.name_en,
-            },
-          });
-        }
+        // for (const option of toUpdate) {
+        //   await this._prismaService.subscriptionsOptions.update({
+        //     where: { id: option.id },
+        //     data: {
+        //       name_ar: option.name_ar,
+        //       name_en: option.name_en,
+        //     },
+        //   });
+        // }
 
         // Create new options
         if (toCreate.length > 0) {
@@ -187,20 +186,20 @@ export class SubscriptionsService {
             data: toCreate.map((option) => ({
               name_ar: option.name_ar,
               name_en: option.name_en,
-              subscriptions_id: Number(id), // Link to the existing subscription
+              subscriptions_id: id, // Link to the existing subscription
             })),
           });
         }
 
         // Soft delete options
-        if (toDelete.length > 0) {
-          await this._prismaService.subscriptionsOptions.updateMany({
-            where: { id: { in: toDelete } },
-            data: { deleted_at: new Date() }, // Set deleted_at timestamp
-          });
-        }
+        // if (toDelete.length > 0) {
+        //   await this._prismaService.subscriptionsOptions.updateMany({
+        //     where: { id: { in: toDelete } },
+        //     data: { deleted_at: new Date() }, // Set deleted_at timestamp
+        //   });
+        // }
       }
-      const result = await this.findOne(Number(id));
+      const result = await this.findOne(id);
       return ResponseUtil.success('Subscription updated successfully', result);
     } catch (error) {
       this.logger.error(`Error in updating subscription: ${error.message}`, error.stack);
@@ -208,16 +207,16 @@ export class SubscriptionsService {
     }
   }
 
-  async remove(id: number): Promise<unknown> {
+  async remove(id: string): Promise<unknown> {
     try {
       const subscription = await this._prismaService.subscription.update({
-        where: { id: Number(id) },
+        where: { id: id },
         data: {
           deleted_at: new Date(),
         },
       });
       await this._prismaService.subscriptionsOptions.updateMany({
-        where: { subscriptions_id: Number(id) },
+        where: { subscriptions_id: id },
         data: { deleted_at: new Date() }, // Set deleted_at timestamp
       });
       return ResponseUtil.success('subscription Deleted', subscription);

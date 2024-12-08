@@ -24,7 +24,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'User not found.' })
   // Get a user by ID
   @Get(':id')
-  async findOne(@Param('id') id: number) {
+  async findOne(@Param('id') id: string) {
     return this._usersService.findOne(id); // Find user by ID
   }
 
@@ -43,7 +43,7 @@ export class UsersController {
   // Update a user by ID
   @Put(':id')
   async update(
-    @Param('id') id: number, // Get user ID from the URL
+    @Param('id') id: string, // Get user ID from the URL
     @Body() updateUserDto: UpdateUserDto, // Get updated data from the request
   ) {
     return this._usersService.update(id, updateUserDto); // Update user
@@ -54,7 +54,7 @@ export class UsersController {
   @ApiResponse({ status: 204, description: 'User deleted.' })
   // Delete a user by ID
   @Delete(':id')
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id') id: string) {
     return this._usersService.remove(id); // Delete user
   }
 

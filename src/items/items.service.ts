@@ -53,7 +53,7 @@ export class ItemsService {
             },
           },
           orderBy: {
-            id: 'desc',
+            created_at: 'desc',
           },
         }),
         this._prismaService.item.count({
@@ -114,7 +114,7 @@ export class ItemsService {
             },
           },
           orderBy: {
-            id: 'desc',
+            created_at: 'desc',
           },
         }),
         this._prismaService.item.count({
@@ -131,10 +131,10 @@ export class ItemsService {
     }
   }
 
-  async findOne(id: number): Promise<unknown> {
+  async findOne(id: string): Promise<unknown> {
     try {
       const item = await this._prismaService.item.findUnique({
-        where: { id: Number(id) },
+        where: { id: id },
         select: {
           id: true,
           title: true,
@@ -236,11 +236,11 @@ export class ItemsService {
     }
   }
 
-  async update(id: number, data: CreateItemDto): Promise<unknown> {
+  async update(id: string, data: CreateItemDto): Promise<unknown> {
     try {
       // Update the main item details
       await this._prismaService.item.update({
-        where: { id: Number(id) },
+        where: { id:id },
         data: {
           title: data.title,
           description: data.description,
@@ -258,7 +258,7 @@ export class ItemsService {
       if (data.image_urls && data.image_urls.length > 0) {
         // Fetch existing images for the item
         const existingImages = await this._prismaService.itemImage.findMany({
-          where: { item_id: Number(id) },
+          where: { item_id: id },
         });
   
         const existingImageUrls = existingImages.map((image) => image.image_url);
@@ -268,7 +268,7 @@ export class ItemsService {
         // Delete unused images
         if (toDelete.length > 0) {
           await this._prismaService.itemImage.deleteMany({
-            where: { image_url: { in: toDelete }, item_id: Number(id) },
+            where: { image_url: { in: toDelete }, item_id: id },
           });
         }
   
@@ -277,7 +277,7 @@ export class ItemsService {
           await this._prismaService.itemImage.createMany({
             data: toCreate.map((url) => ({
               image_url: url,
-              item_id: Number(id),
+              item_id: id,
             })),
           });
         }
@@ -286,7 +286,7 @@ export class ItemsService {
       // // Handle Banner Updates (Only update if banner exists)
       // if (data.is_banner) {
       //   const existingBanner = await this._prismaService.banner.findU({
-      //     where: { item_id: Number(id) },
+      //     where: { item_id: id },
       //   });
   
       //   if (existingBanner) {
@@ -308,13 +308,13 @@ export class ItemsService {
   
       // Retrieve the updated item with its relationships
       // const result = await this._prismaService.item.findUnique({
-      //   where: { id: Number(id) },
+      //   where: { id: id },
       //   include: {
       //     itemImages: true,
       //     banner: true,
       //   },
       // });
-      const result = await this.findOne(Number(id));
+      const result = await this.findOne(id);
       return ResponseUtil.success('Item updated successfully', result);
     } catch (error) {
       this.logger.error(`Error in updating item: ${error.message}`, error.stack);
@@ -323,10 +323,10 @@ export class ItemsService {
   }
   
 
-  async update2(id: number, data: CreateItemDto): Promise<unknown> {
+  async update2(id: string, data: CreateItemDto): Promise<unknown> {
     try {
       const item = await this._prismaService.item.update({
-        where: { id: Number(id) },
+        where: { id:id },
         data: {
           title: data.title,
           description: data.description,
@@ -347,10 +347,10 @@ export class ItemsService {
     }
   }
 
-  async remove(id: number): Promise<unknown> {
+  async remove(id: string): Promise<unknown> {
     try {
       const item = await this._prismaService.item.update({
-        where: { id: Number(id) },
+        where: { id: id},
         data: {
           deleted_at: new Date(),
         },

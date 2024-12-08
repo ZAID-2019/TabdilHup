@@ -9,9 +9,10 @@ import { CategoriesModule } from './categories/categories.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { UploadModule } from './upload/upload.module';
+import { PublicDataModule } from './public-data/public-data.module';
 
 @Module({
-  imports: [UsersModule, PrismaModule, AuthModule, CountriesModule, CitiesModule, ItemsModule, CategoriesModule, SubscriptionsModule, CloudinaryModule, UploadModule],
+  imports: [UsersModule, PrismaModule, AuthModule, CountriesModule, CitiesModule, ItemsModule, CategoriesModule, SubscriptionsModule, CloudinaryModule, UploadModule, PublicDataModule],
   controllers: [],
   providers: [],
 })

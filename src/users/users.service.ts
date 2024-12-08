@@ -31,7 +31,7 @@ export class UsersService {
             country: { select: { id: true, name_en: true, name_ar: true } },
           },
           orderBy: {
-            id: 'desc', // Change 'created_at' to your desired field
+            created_at: 'desc', // Change 'created_at' to your desired field
           },
         }),
         this._prismaService.user.count({
@@ -48,9 +48,9 @@ export class UsersService {
   }
 
   // Find a user by ID
-  async findOne(id: number): Promise<unknown> {
+  async findOne(id: string): Promise<unknown> {
     const user = await this._prismaService.user.findUnique({
-      where: { id: Number(id) },
+      where: { id: id },
     });
     return user; // Type assertion to ensure correct type
   }
@@ -84,24 +84,24 @@ export class UsersService {
   }
 
   // Update an existing user by ID
-  async update(id: number, data: UpdateUserDto): Promise<unknown> {
-    const user = await this._prismaService.user.findUnique({ where: { id: Number(id) } }); // Check if the user exists
+  async update(id: string, data: UpdateUserDto): Promise<unknown> {
+    const user = await this._prismaService.user.findUnique({ where: { id: id } }); // Check if the user exists
     if (!user) throw new NotFoundException(`User not found`); // Throw error if user doesn't exist
 
     return this._prismaService.user.update({
-      where: { id: Number(id) }, // Specify the user to update
+      where: { id: id }, // Specify the user to update
       data, // Provide the updated data
     });
   }
 
   // Soft delete a user by ID
-  async remove(id: number): Promise<unknown> {
-    const user = await this._prismaService.user.findUnique({ where: { id: Number(id) } }); // Check if the user exists
+  async remove(id: string): Promise<unknown> {
+    const user = await this._prismaService.user.findUnique({ where: { id: id } }); // Check if the user exists
     if (!user) throw new NotFoundException(`User not found`); // Throw error if user doesn't exist
 
     // Soft delete by setting the deletedAt field to the current date
     return this._prismaService.user.update({
-      where: { id: Number(id) }, // Specify the user to update
+      where: { id: id }, // Specify the user to update
       data: { deleted_at: new Date() }, // Set the deletedAt field to mark as deleted
     });
   }

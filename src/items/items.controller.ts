@@ -29,7 +29,7 @@ export class ItemsController {
   @ApiResponse({ status: 200, description: 'City found.' })
   @ApiResponse({ status: 404, description: 'City not found.' })
   @Get(':id')
-  async findOne(@Param('id') id: number) {
+  async findOne(@Param('id') id: string) {
     return this._itemsService.findOne(id);
   }
 
@@ -45,7 +45,7 @@ export class ItemsController {
   @ApiOperation({ summary: 'Update a item by ID' })
   @ApiResponse({ status: 200, description: 'City updated.' })
   @Put(':id')
-  async update(@Param('id') id: number, @Body() updateCityDto: CreateItemDto) {
+  async update(@Param('id') id: string, @Body() updateCityDto: CreateItemDto) {
     return this._itemsService.update(id, updateCityDto);
   }
 
@@ -53,7 +53,7 @@ export class ItemsController {
   @ApiOperation({ summary: 'Delete a item by ID' })
   @ApiResponse({ status: 204, description: 'City deleted.' })
   @Delete(':id')
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id') id: string) {
     return this._itemsService.remove(id);
   }
 

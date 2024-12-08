@@ -22,7 +22,7 @@ export class CountriesService {
             id: true,
             name_ar: true,
             name_en: true,
-            city: {
+            cities: {
               select: {
                 id: true,
                 name_ar: true,
@@ -31,7 +31,7 @@ export class CountriesService {
             }
           },
           orderBy: {
-            id: 'desc',
+            created_at: 'desc',
           },
         }),
         this._prismaService.country.count({
@@ -48,15 +48,15 @@ export class CountriesService {
     }
   }
 
-  async findOne(id: number): Promise<unknown> {
+  async findOne(id: string): Promise<unknown> {
     try {
       const country = await this._prismaService.country.findUnique({
-        where: { id: Number(id) , deleted_at: null},
+        where: { id: id , deleted_at: null},
         select: {
           id: true,
           name_ar: true,
           name_en: true,
-          city: {
+          cities: {
             select: {
               id: true,
               name_ar: true,
@@ -89,10 +89,10 @@ export class CountriesService {
     }
   }
 
-  async update(id: number, data: CreateCountryDto): Promise<unknown> {
+  async update(id: string, data: CreateCountryDto): Promise<unknown> {
     try {
       const country = await this._prismaService.country.update({
-        where: { id: Number(id) },
+        where: { id: id },
         data: {
           name_ar: data.name_ar,
           name_en: data.name_en,
@@ -106,10 +106,10 @@ export class CountriesService {
     }
   }
 
-  async remove(id: number): Promise<unknown> {
+  async remove(id: string): Promise<unknown> {
     try {
       const country = await this._prismaService.country.update({
-        where: { id: Number(id) },
+        where: { id: id },
         data: {
           deleted_at: new Date(),
         },
