@@ -14,7 +14,7 @@ enum SubscriptionsStatus {
 }
 
 interface SubscriptionOption {
-  id?: number;
+  id?: string;
   name_ar: string;
   name_en: string;
 }
@@ -47,12 +47,11 @@ export class CreateSubscriptionDTO {
   @IsEnum(SubscriptionsStatus)
   status: SubscriptionsStatus; // Enum to indicate if the suscription is ACTIVE or INACTIVE
 
-  
   @IsOptional()
-  SubscriptionsOptions:SubscriptionOption[]; // Array of subscription options
+  subscription_options:SubscriptionOption[]; // Array of subscription options
 
   @IsDate()
-  created_at: Date; // Timestamp for when the subscription was created
+  created_at?: Date; // Timestamp for when the subscription was created
 
   @IsDate()
   @IsOptional()

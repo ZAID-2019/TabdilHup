@@ -100,8 +100,8 @@ model Item {
   Banner      Banner[]
   category_id String
   category    Category      @relation(fields: [category_id], references: [id])
-  Country     Country?      @relation(fields: [country_id], references: [id])
-  City        City?         @relation(fields: [city_id], references: [id])
+  country     Country?      @relation(fields: [country_id], references: [id])
+  city        City?         @relation(fields: [city_id], references: [id])
   created_at  DateTime      @default(now())
   updated_at  DateTime?     @default(now()) @updatedAt
   deleted_at  DateTime?
@@ -164,7 +164,7 @@ model Subscription {
   created_at           DateTime                @default(now())
   updated_at           DateTime?               @default(now()) @updatedAt
   deleted_at           DateTime?
-  SubscriptionsOptions SubscriptionsOptions[]
+  subscription_options SubscriptionsOptions[]
 
   @@map("subscriptions")
 }

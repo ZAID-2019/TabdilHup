@@ -32,7 +32,7 @@ export class CategoriesService {
           },
         }),
         this._prismaService.category.count({
-          where: { deleted_at: null },
+          where: { deleted_at: null, parent_id: null },
         }),
       ]);
 
@@ -67,13 +67,23 @@ export class CategoriesService {
             description_en: true,
             image_url: true,
             parent_id: true,
+            parent: {
+              select: {
+                id: true,
+                name_ar: true,
+                name_en: true,
+                description_ar: true,
+                description_en: true,
+                image_url: true,
+              },
+            },
           },
           orderBy: {
             created_at: 'desc',
           },
         }),
         this._prismaService.category.count({
-          where: { deleted_at: null },
+          where: { deleted_at: null, parent_id: { not: null } },
         }),
       ]);
 
@@ -97,7 +107,7 @@ export class CategoriesService {
       offset = Number(offset) || 0;
       const [categories, total] = await Promise.all([
         this._prismaService.category.findMany({
-          where: { deleted_at: null, parent_id:id },
+          where: { deleted_at: null, parent_id: id },
           take: limit,
           skip: offset,
           select: {
@@ -114,7 +124,7 @@ export class CategoriesService {
           },
         }),
         this._prismaService.category.count({
-          where: { deleted_at: null },
+          where: { deleted_at: null, parent_id: id },
         }),
       ]);
       this.logger.verbose(`Successfully Retrieved ${categories.length} Categories`);

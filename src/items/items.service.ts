@@ -29,8 +29,8 @@ export class ItemsService {
             category_id: true,
             country_id: true,
             city_id: true,
-            City: { select: { id: true, name_ar: true, name_en: true } },
-            Country: { select: { id: true, name_ar: true, name_en: true } },
+            city: { select: { id: true, name_ar: true, name_en: true } },
+            country: { select: { id: true, name_ar: true, name_en: true } },
             category: {
               select: {
                 id: true,
@@ -90,8 +90,8 @@ export class ItemsService {
             country_id: true,
             Banner: { select: { id: true, start_date: true, end_date: true, is_active: true } },
             city_id: true,
-            City: { select: { id: true, name_ar: true, name_en: true } },
-            Country: { select: { id: true, name_ar: true, name_en: true } },
+            city: { select: { id: true, name_ar: true, name_en: true } },
+            country: { select: { id: true, name_ar: true, name_en: true } },
             category: {
               select: {
                 id: true,
@@ -118,7 +118,7 @@ export class ItemsService {
           },
         }),
         this._prismaService.item.count({
-          where: { deleted_at: null },
+          where: { deleted_at: null, is_banner: true },
         }),
       ]);
 
@@ -145,8 +145,8 @@ export class ItemsService {
           category_id: true,
           country_id: true,
           city_id: true,
-          City: { select: { id: true, name_ar: true, name_en: true } },
-          Country: { select: { id: true, name_ar: true, name_en: true } },
+          city: { select: { id: true, name_ar: true, name_en: true } },
+          country: { select: { id: true, name_ar: true, name_en: true } },
           Banner: { select: { id: true, start_date: true, end_date: true, is_active: true } },
           category: {
             select: {
@@ -797,8 +797,8 @@ export class ItemsService {
           country_id: true,
           city_id: true,
           user_id: true,
-          City: { select: { id: true, name_ar: true, name_en: true } },
-          Country: { select: { id: true, name_ar: true, name_en: true } },
+          city: { select: { id: true, name_ar: true, name_en: true } },
+          country: { select: { id: true, name_ar: true, name_en: true } },
           category: {
             select: {
               id: true,
