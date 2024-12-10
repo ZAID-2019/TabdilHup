@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ItemsService } from './items.service';
 import { CreateItemDto } from './create-item.dto';
+import { CreateBannerDto } from './create-banner.dto';
 
 @Controller('api/items')
 export class ItemsController {
@@ -23,6 +24,23 @@ export class ItemsController {
   async findAllBanners(@Query('limit') limit: number = 10, @Query('offset') offset: number = 0) {
     return this._itemsService.findAllBanners(limit, offset);
   }
+
+  @Get('/banners/:id')
+  async findBanner(@Param('id') id: string) {
+    return this._itemsService.findOneBanner(id);
+  }
+
+  @Put('/banners/:id')
+  async updateBanner(@Param('id') id: string, @Body() updateBanner: CreateBannerDto) {
+    return this._itemsService.updateBanner(id,updateBanner);
+  }
+
+
+  @Delete('/banners/:id')
+  async removeBanner(@Param('id') id: string) {
+    return this._itemsService.removeBanner(id);
+  }
+
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a item by ID' })

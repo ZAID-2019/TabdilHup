@@ -108,7 +108,7 @@ export class UsersService {
 
   // Search for users
   async search(query: string): Promise<unknown> {
-    console.log({ query });
+    // console.log({ query });
     const limit = 10; // Default limit to 10 if not provided
     const offset = 1;
     const users = await this._prismaService.user.findMany({
@@ -151,7 +151,7 @@ export class UsersService {
         skipDuplicates: true, // Optional: Skip records with duplicate unique fields
       });
 
-      console.log(`Inserted batch ${i / batchSize + 1}`);
+      // console.log(`Inserted batch ${i / batchSize + 1}`);
     }
 
     return { message: 'Batch insertion completed' };

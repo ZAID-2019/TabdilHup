@@ -3,6 +3,7 @@ import { ResponseUtil } from 'src/common/response.util';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateItemDto } from './create-item.dto';
 import { faker } from '@faker-js/faker';
+import { CreateBannerDto } from './create-banner.dto';
 
 @Injectable()
 export class ItemsService {
@@ -38,7 +39,7 @@ export class ItemsService {
                 name_en: true,
               },
             },
-            itemImages: {
+            item_images: {
               select: {
                 id: true,
                 image_url: true,
@@ -70,7 +71,7 @@ export class ItemsService {
     }
   }
 
-  async findAllBanners(limit?: number, offset?: number): Promise<unknown> {
+  async findAllBannersOLD(limit?: number, offset?: number): Promise<unknown> {
     try {
       limit = Number(limit) || 10;
       offset = Number(offset) || 0;
@@ -88,7 +89,7 @@ export class ItemsService {
             is_banner: true,
             category_id: true,
             country_id: true,
-            Banner: { select: { id: true, start_date: true, end_date: true, is_active: true } },
+            banners: { select: { id: true, start_date: true, end_date: true, is_active: true } },
             city_id: true,
             city: { select: { id: true, name_ar: true, name_en: true } },
             country: { select: { id: true, name_ar: true, name_en: true } },
@@ -99,7 +100,7 @@ export class ItemsService {
                 name_en: true,
               },
             },
-            itemImages: {
+            item_images: {
               select: {
                 id: true,
                 image_url: true,
@@ -131,6 +132,69 @@ export class ItemsService {
     }
   }
 
+  async findAllBanners(limit?: number, offset?: number): Promise<unknown> {
+    try {
+      limit = Number(limit) || 10;
+      offset = Number(offset) || 0;
+      const [banners, total] = await Promise.all([
+        this._prismaService.banner.findMany({
+          where: { deleted_at: null, item: { is_banner: true } },
+          take: limit,
+          skip: offset,
+          include: {
+            item: {
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                trade_value: true,
+                condition: true,
+                is_banner: true,
+                category_id: true,
+                country_id: true,
+                city_id: true,
+                city: { select: { id: true, name_ar: true, name_en: true } },
+                country: { select: { id: true, name_ar: true, name_en: true } },
+                category: {
+                  select: {
+                    id: true,
+                    name_ar: true,
+                    name_en: true,
+                  },
+                },
+                item_images: {
+                  select: {
+                    id: true,
+                    image_url: true,
+                  },
+                },
+                user: {
+                  select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            created_at: 'desc',
+          },
+        }),
+        this._prismaService.item.count({
+          where: { deleted_at: null, is_banner: true },
+        }),
+      ]);
+
+      this.logger.verbose(`Successfully Retrieved ${banners.length} banners`);
+      // return ResponseUtil.success('Find All Items', { items, total });
+      return { banners, total, status: 'success', message: 'Find All banners' };
+    } catch (error) {
+      this.logger.error(`Error In Find All Items: ${error.message}`, error.stack);
+      return ResponseUtil.error('An error occurred while searching for items', 'FIND_ALL_FAILED', error?.message);
+    }
+  }
   async findOne(id: string): Promise<unknown> {
     try {
       const item = await this._prismaService.item.findUnique({
@@ -147,7 +211,7 @@ export class ItemsService {
           city_id: true,
           city: { select: { id: true, name_ar: true, name_en: true } },
           country: { select: { id: true, name_ar: true, name_en: true } },
-          Banner: { select: { id: true, start_date: true, end_date: true, is_active: true } },
+          banners: { select: { id: true, start_date: true, end_date: true, is_active: true } },
           category: {
             select: {
               id: true,
@@ -155,7 +219,7 @@ export class ItemsService {
               name_en: true,
             },
           },
-          itemImages: {
+          item_images: {
             select: {
               id: true,
               image_url: true,
@@ -240,7 +304,7 @@ export class ItemsService {
     try {
       // Update the main item details
       await this._prismaService.item.update({
-        where: { id:id },
+        where: { id: id },
         data: {
           title: data.title,
           description: data.description,
@@ -253,25 +317,25 @@ export class ItemsService {
           category_id: data.category_id,
         },
       });
-  
+
       // Handle Images
       if (data.image_urls && data.image_urls.length > 0) {
         // Fetch existing images for the item
         const existingImages = await this._prismaService.itemImage.findMany({
           where: { item_id: id },
         });
-  
+
         const existingImageUrls = existingImages.map((image) => image.image_url);
         const toCreate = data.image_urls.filter((url) => !existingImageUrls.includes(url));
         const toDelete = existingImageUrls.filter((url) => !data.image_urls.includes(url));
-  
+
         // Delete unused images
         if (toDelete.length > 0) {
           await this._prismaService.itemImage.deleteMany({
             where: { image_url: { in: toDelete }, item_id: id },
           });
         }
-  
+
         // Add new images
         if (toCreate.length > 0) {
           await this._prismaService.itemImage.createMany({
@@ -282,51 +346,103 @@ export class ItemsService {
           });
         }
       }
-  
-      // // Handle Banner Updates (Only update if banner exists)
-      // if (data.is_banner) {
-      //   const existingBanner = await this._prismaService.banner.findU({
-      //     where: { item_id: id },
-      //   });
-  
-      //   if (existingBanner) {
-      //     const startDate = data.start_date ? new Date(data.start_date) : existingBanner.start_date;
-      //     const endDate = data.end_date
-      //       ? new Date(data.end_date)
-      //       : new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-  
-      //     await this._prismaService.banner.update({
-      //       where: { id: existingBanner.id },
-      //       data: {
-      //         start_date: startDate,
-      //         end_date: endDate,
-      //         is_active: true,
-      //       },
-      //     });
-      //   }
-      // }
-  
-      // Retrieve the updated item with its relationships
-      // const result = await this._prismaService.item.findUnique({
-      //   where: { id: id },
-      //   include: {
-      //     itemImages: true,
-      //     banner: true,
-      //   },
-      // });
       const result = await this.findOne(id);
-      return ResponseUtil.success('Item updated successfully', result);
+      return result;
     } catch (error) {
       this.logger.error(`Error in updating item: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while updating the item', 'UPDATE_FAILED', error?.message);
     }
   }
-  
+
+  async updateBanner(id: string, updateBanner: CreateBannerDto): Promise<unknown> {
+    try {
+      await this._prismaService.banner.update({
+        where: { id: id },
+        data: {
+          is_active: updateBanner.is_active,
+          start_date: updateBanner.start_date ? new Date(updateBanner.start_date) : null, // Set to null if empty
+        end_date: updateBanner.end_date ? new Date(updateBanner.end_date) : null, // Set to null if empty
+        },
+      });
+      return { status: 'success', message: 'Banner Updated' };
+    } catch (error) {
+      this.logger.error(`Error in updating banner: ${error.message}`, error.stack);
+      return ResponseUtil.error('An error occurred while updating the banner', 'UPDATE_FAILED', error?.message);
+    }
+  }
+
+
+  async removeBanner(id: string): Promise<unknown> {
+    try {
+      await this._prismaService.banner.update({
+        where: { id },
+        data: {
+          is_active: false,
+          deleted_at: new Date(),
+        },
+      });
+      return { status: 'success', message: 'Banner Deleted' };
+    } catch (error) {
+      this.logger.error(`Error in deleting banner: ${error.message}`, error.stack);
+      return ResponseUtil.error('An error occurred while deleting the banner', 'DELETE_FAILED', error?.message);
+    }
+  }
+
+  async findOneBanner(id:string): Promise<unknown> {
+    try {
+       const banner = await this._prismaService.banner.findUnique({
+          where: { id: id, item: { is_banner: true } },
+          include: {
+            item: {
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                trade_value: true,
+                condition: true,
+                is_banner: true,
+                category_id: true,
+                country_id: true,
+                city_id: true,
+                city: { select: { id: true, name_ar: true, name_en: true } },
+                country: { select: { id: true, name_ar: true, name_en: true } },
+                category: {
+                  select: {
+                    id: true,
+                    name_ar: true,
+                    name_en: true,
+                  },
+                },
+                item_images: {
+                  select: {
+                    id: true,
+                    image_url: true,
+                  },
+                },
+                user: {
+                  select: {
+                    id: true,
+                    first_name: true,
+                    last_name: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+      this.logger.verbose(`Successfully Retrieved One banner`);
+      // return ResponseUtil.success('Find All Items', { items, total });
+      return { banner,status: 'success', message: 'Find one banner' };
+    } catch (error) {
+      this.logger.error(`Error In Find All Items: ${error.message}`, error.stack);
+      return ResponseUtil.error('An error occurred while searching for items', 'FIND_ALL_FAILED', error?.message);
+    }
+  }
 
   async update2(id: string, data: CreateItemDto): Promise<unknown> {
     try {
       const item = await this._prismaService.item.update({
-        where: { id:id },
+        where: { id: id },
         data: {
           title: data.title,
           description: data.description,
@@ -350,11 +466,32 @@ export class ItemsService {
   async remove(id: string): Promise<unknown> {
     try {
       const item = await this._prismaService.item.update({
-        where: { id: id},
+        where: { id: id },
         data: {
           deleted_at: new Date(),
         },
       });
+
+      // Check if the item is a banner
+      const isBanner = await this._prismaService.banner.findMany({
+        where: {
+          item_id: id,
+          is_active: true, // Only check active banners
+          deleted_at: null, // Ensure it's not soft-deleted
+        },
+      });
+
+      if (isBanner.length > 0) {
+        // Deactivate the banner
+        await this._prismaService.banner.updateMany({
+          where: {
+            item_id: id,
+          },
+          data: {
+            is_active: false,
+          },
+        });
+      }
       // return ResponseUtil.success('Item Deleted', item);
       return { item, status: 'success', message: 'Item Deleted' };
     } catch (error) {
@@ -385,7 +522,7 @@ export class ItemsService {
         skipDuplicates: true, // Optional: Skip records with duplicate unique fields
       });
 
-      console.log(`Inserted batch ${i / batchSize + 1}`);
+      // console.log(`Inserted batch ${i / batchSize + 1}`);
     }
 
     return { message: 'Batch insertion completed' };
@@ -428,7 +565,7 @@ export class ItemsService {
           skipDuplicates: true, // Optional: Skip records with duplicate unique fields
         });
 
-        console.log(`Inserted batch ${i / batchSize + 1}`);
+        // console.log(`Inserted batch ${i / batchSize + 1}`);
       }
     }
 
@@ -806,7 +943,7 @@ export class ItemsService {
               name_en: true,
             },
           },
-          itemImages: {
+          item_images: {
             select: {
               image_url: true,
             },

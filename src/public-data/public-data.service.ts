@@ -48,7 +48,7 @@ export class PublicDataService {
   }
   async getBanners(): Promise<unknown> {
     try {
-      const items = await this._prismaService.item.findMany({
+      const banners = await this._prismaService.item.findMany({
         select: {
           id: true,
           title: true,
@@ -56,12 +56,12 @@ export class PublicDataService {
           is_banner: true,
           user_id: true,
           user: { select: { first_name: true, last_name: true } },
-          itemImages: { select: { image_url: true } },
+          item_images: { select: { image_url: true } },
         },
         where: {
           deleted_at: null,
           is_banner: true,
-          Banner: {
+          banners: {
             some: {
               is_active: true,
             },
@@ -69,7 +69,7 @@ export class PublicDataService {
         },
       });
       this.logger.verbose(`Banners Successful Retrieved`);
-      return { items, status: 'success', message: 'Banners Successful Retrieved' };
+      return { banners, status: 'success', message: 'Banners Successful Retrieved' };
     } catch (error) {
       // Log and handle error
       this.logger.error(`Error during get banners: ${error.message}`, error.stack);
@@ -82,7 +82,7 @@ export class PublicDataService {
   async getCategories(): Promise<unknown> {
     try {
       const categories = await this._prismaService.category.findMany({
-        where: { parent_id: null , deleted_at: null },
+        where: { parent_id: null, deleted_at: null },
         select: {
           id: true,
           name_ar: true,
@@ -104,7 +104,7 @@ export class PublicDataService {
   async getSubscriptions(): Promise<unknown> {
     try {
       const subscriptions = await this._prismaService.subscription.findMany({
-        where: { category: 'REGULAR' , status: 'ACTIVE' , deleted_at: null },
+        where: { category: 'REGULAR', status: 'ACTIVE', deleted_at: null },
         select: {
           id: true,
           title_ar: true,
@@ -113,6 +113,13 @@ export class PublicDataService {
           description_en: true,
           price: true,
           offer_price: true,
+          subscription_options: {
+            select: {
+              id: true,
+              name_ar: true,
+              name_en: true,
+            },
+          },
         },
       });
       return { subscriptions, status: 'success', message: 'Subscriptions Successful Retrieved' };
@@ -126,83 +133,66 @@ export class PublicDataService {
   }
   async getFeaturedItems(): Promise<unknown> {
     try {
-       // Step 1: Fetch 3 random categories
-    const mainCategories  = await this._prismaService.category.findMany({
-      where: { deleted_at: null , parent_id: null },
-      take: 5, // Number of categories to fetch
-      orderBy: { created_at: 'desc' }, // Replace with custom random logic if needed
-      select: {
-        id: true,
-        name_ar: true,
-        name_en: true,
-        description_ar: true,
-        description_en: true,
-        image_url: true,
-        children:{
-          select:{
-            id: true,
-            name_ar: true,
-            name_en: true,
-            description_ar: true,
-            description_en: true,
-          }
-        }
-      }
-    });
-    return {
-      mainCategories,
-      status: 'success',
-      message: 'Featured Items Successfully Retrieved',
-    };
-    const featuredItems: any[] = [];
-
-// Step 2: Fetch 5 random items for each category
-await Promise.all(
-  mainCategories.map(async (mainCategory) => {
-    const subcategoriesWithItems = await Promise.all(
-      mainCategory.children.map(async (subCategory) => {
-        const items = await this._prismaService.item.findMany({
-          where: { category_id: subCategory.id }, // Fetch items for subcategory
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            itemImages: true,
+      const featuredItemsCollection = await this._prismaService.category.findMany({
+        where: { parent_id: null },
+        select: {
+          id: true,
+          name_ar: true,
+          name_en: true,
+          children: {
+            where: { deleted_at: null },
+            select: {
+              id: true,
+              name_ar: true,
+              name_en: true,
+              items: {
+                select: {
+                  id: true,
+                  title: true,
+                  item_images: {
+                    select: {
+                      image_url: true,
+                    },
+                  },
+                },
+              },
+            },
           },
-          take: 5, // Limit items to 5 per subcategory
-        });
+          
+        },
+      });
 
-        return {
-          subCategoryName: subCategory,
-          items, // Attach items to their respective subcategories
+    const featuredItems = featuredItemsCollection.map((category) => {
+        // Extract main category details
+        const mainCategory = {
+          id: category.id,
+          name_ar: category.name_ar,
+          name_en: category.name_en,
+          items: [],
         };
-      }),
-    );
-console.log({subcategoriesWithItems});
-
-    // Combine the main category with its subcategories and items
-    featuredItems.push({
-      mainCategoryNameAr: mainCategory.name_ar,
-      mainCategoryNameEn: mainCategory.name_en,
-      items: subcategoriesWithItems,
-    });
-  }),
-);
-
-return {
-  featuredItems,
-  status: 'success',
-  message: 'Featured Items Successfully Retrieved',
-};
-
-
-    }catch (error) {
+    
+        // Aggregate items from all children categories with items
+        if (category.children && category.children.length > 0) {
+          category.children.forEach((child) => {
+            if (child.items && child.items.length > 0) {
+              mainCategory.items.push(...child.items);
+            }
+          });
+        }
+    
+        // Randomize and limit the items to 2
+        mainCategory.items = mainCategory.items.sort(() => 0.5 - Math.random()).slice(0, 2);
+    
+        return mainCategory;
+      });
+  
+      return { featuredItems, status: 'success', message: 'Featured Items Successfully Retrieved' };
+    } catch (error) {
       this.logger.error(`Error during get featured items: ${error.message}`, error.stack);
       throw new HttpException(
         { status: 'error', message: 'An error occurred while getting featured items', details: error.message },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
   }
 }

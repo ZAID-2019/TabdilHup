@@ -24,7 +24,6 @@ export class SubscriptionsService {
             title_en: true,
             description_ar: true,
             description_en: true,
-            image_url: true,
             price: true,
             offer_price: true,
             category: true,
@@ -72,7 +71,6 @@ export class SubscriptionsService {
           title_en: true,
           description_ar: true,
           description_en: true,
-          image_url: true,
           price: true,
           offer_price: true,
           category: true,
@@ -150,7 +148,7 @@ export class SubscriptionsService {
       });
 
       if (data.subscription_options && data.subscription_options.length > 0) {
-        console.log('Updating subscription options' , data.subscription_options);
+        // console.log('Updating subscription options' , data.subscription_options);
         
         // Fetch existing options for the subscription
         // const existingOptions = await this._prismaService.subscriptionsOptions.findMany({
