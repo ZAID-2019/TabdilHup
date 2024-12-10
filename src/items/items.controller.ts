@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ItemsService } from './items.service';
 import { CreateItemDto } from './create-item.dto';
+import { CreateBannerDto } from './create-banner.dto';
 
 @Controller('api/items')
 export class ItemsController {
@@ -24,12 +25,29 @@ export class ItemsController {
     return this._itemsService.findAllBanners(limit, offset);
   }
 
+  @Get('/banners/:id')
+  async findBanner(@Param('id') id: string) {
+    return this._itemsService.findOneBanner(id);
+  }
+
+  @Put('/banners/:id')
+  async updateBanner(@Param('id') id: string, @Body() updateBanner: CreateBannerDto) {
+    return this._itemsService.updateBanner(id,updateBanner);
+  }
+
+
+  @Delete('/banners/:id')
+  async removeBanner(@Param('id') id: string) {
+    return this._itemsService.removeBanner(id);
+  }
+
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a item by ID' })
   @ApiResponse({ status: 200, description: 'City found.' })
   @ApiResponse({ status: 404, description: 'City not found.' })
   @Get(':id')
-  async findOne(@Param('id') id: number) {
+  async findOne(@Param('id') id: string) {
     return this._itemsService.findOne(id);
   }
 
@@ -45,7 +63,7 @@ export class ItemsController {
   @ApiOperation({ summary: 'Update a item by ID' })
   @ApiResponse({ status: 200, description: 'City updated.' })
   @Put(':id')
-  async update(@Param('id') id: number, @Body() updateCityDto: CreateItemDto) {
+  async update(@Param('id') id: string, @Body() updateCityDto: CreateItemDto) {
     return this._itemsService.update(id, updateCityDto);
   }
 
@@ -53,7 +71,7 @@ export class ItemsController {
   @ApiOperation({ summary: 'Delete a item by ID' })
   @ApiResponse({ status: 204, description: 'City deleted.' })
   @Delete(':id')
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id') id: string) {
     return this._itemsService.remove(id);
   }
 

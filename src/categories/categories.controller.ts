@@ -25,7 +25,7 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Get all sub categories By Category ID' })
   @ApiResponse({ status: 200, description: 'List of sub categories.' })
   async findAllSubByCategory(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Query('limit') limit: number = 1000,
     @Query('offset') offset: number = 0,
   ) {
@@ -37,7 +37,7 @@ export class CategoriesController {
   @ApiResponse({ status: 200, description: 'Category found.' })
   @ApiResponse({ status: 404, description: 'Category not found.' })
   @Get(':id')
-  async findOne(@Param('id') id: number) {
+  async findOne(@Param('id') id: string) {
     return this._categoriesService.findOne(id);
   }
 
@@ -51,14 +51,14 @@ export class CategoriesController {
   @ApiOperation({ summary: 'Update a category by ID' })
   @ApiResponse({ status: 200, description: 'Category updated.' })
   @Put(':id')
-  async update(@Param('id') id: number, @Body() updateCategoryDto: CreateCategoryDto) {
+  async update(@Param('id') id: string, @Body() updateCategoryDto: CreateCategoryDto) {
     return this._categoriesService.update(id, updateCategoryDto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a category by ID' })
   @ApiResponse({ status: 204, description: 'Category deleted.' })
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id') id: string) {
     return this._categoriesService.remove(id);
   }
 }

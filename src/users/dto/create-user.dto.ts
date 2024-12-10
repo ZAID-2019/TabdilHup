@@ -68,9 +68,9 @@ export class CreateUserDto {
 
   @ApiProperty({ description: "Reference to the user's city", required: false }) // Swagger property description
   @IsOptional() // Optional field
-  city_id?: number; // Reference to the user's city (optional)
+  city_id?: string; // Reference to the user's city (optional)
 
   @ApiProperty({ description: "Reference to the user's country", required: false }) // Swagger property description
   @IsOptional() // Optional field
-  country_id?: number; // Reference to the user's country (optional)
+  country_id?: string; // Reference to the user's country (optional)
 }

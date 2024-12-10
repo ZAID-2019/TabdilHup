@@ -1,4 +1,4 @@
-import { IsString, IsInt } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class CreateCityDto {
   @IsString()
@@ -7,6 +7,6 @@ export class CreateCityDto {
   @IsString()
   name_en: string;
 
-  @IsInt()
-  country_id: number;
+  @IsString()
+  country_id: string;
 }

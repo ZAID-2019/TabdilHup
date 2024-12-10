@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsOptional, IsPhoneNumber, IsString, IsNotEmpty, IsNumber, IsDate } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsPhoneNumber, IsString, IsNotEmpty, IsDate } from 'class-validator';
 import { Gender, UserRoles, UserStatus } from '@prisma/client';
 
 export class RegisterDto {
@@ -54,11 +54,11 @@ export class RegisterDto {
   @IsNotEmpty()
   address: string;
 
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  city_id: number;
+  city_id: string;
 
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  country_id: number;
+  country_id: string;
 }

@@ -12,13 +12,13 @@ export class UploadController {
     
     async uploadImage(@UploadedFile() file: Express.Multer.File) {
 
-        console.log("File received: ", file); // Debugging log
+        // console.log("File received: ", file); // Debugging log
         if (!file) {
             return { message: 'No file uploaded' };
         }
         
         try {
-            console.log("file 1", file);
+            // console.log("file 1", file);
             const result = await this.cloudinaryService.uploadImage(file);
 
             return {
