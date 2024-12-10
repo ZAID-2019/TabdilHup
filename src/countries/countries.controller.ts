@@ -20,7 +20,7 @@ export class CountriesController {
   @ApiResponse({ status: 200, description: 'Country found.' })
   @ApiResponse({ status: 404, description: 'Country not found.' })
   @Get(':id')
-  async findOne(@Param('id') id: number) {
+  async findOne(@Param('id') id: string) {
     return this._countriesService.findOne(id);
   }
 
@@ -36,7 +36,7 @@ export class CountriesController {
   @ApiOperation({ summary: 'Update a country by ID' })
   @ApiResponse({ status: 200, description: 'Country updated.' })
   @Put(':id')
-  async update(@Param('id') id: number, @Body() updateCountryDto: CreateCountryDto) {
+  async update(@Param('id') id: string, @Body() updateCountryDto: CreateCountryDto) {
     return this._countriesService.update(id, updateCountryDto);
   }
 
@@ -44,7 +44,7 @@ export class CountriesController {
   @ApiOperation({ summary: 'Delete a country by ID' })
   @ApiResponse({ status: 204, description: 'Country deleted.' })
   @Delete(':id')
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id') id: string) {
     return this._countriesService.remove(id);
   }
 }

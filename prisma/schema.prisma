@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,222 +8,199 @@ datasource db {
 }
 
 enum UserRoles {
-  SUPER_ADMIN // The highest level of access, with full control over the system, including user management, settings, and all platform functionality.
-  ADMIN // Has administrative privileges but with some limitations compared to SUPER_ADMIN. Typically manages users, content, and day-to-day operations.
-  USER // A regular user with standard access to the platform’s features and functionality.
-  MODERATOR // A user responsible for overseeing and moderating content, managing disputes, and ensuring compliance with platform rules.
+  SUPER_ADMIN
+  ADMIN
+  USER
+  MODERATOR
 }
 
 enum UserStatus {
-  ACTIVE // The user is fully active and has full access to the platform.
-  INACTIVE // The user account is inactive, likely due to voluntary deactivation or inactivity.
-  SUSPENDED // The user account is suspended and pending approval from an administrator to be reactivated.
+  ACTIVE
+  INACTIVE
+  SUSPENDED
 }
 
 enum Gender {
-  MALE // Male gender.
-  FEMALE // Female gender.
+  MALE
+  FEMALE
 }
 
 model User {
-  id                                  Int                 @id @default(autoincrement()) // Unique user ID
-  first_name                          String // User's first name
-  last_name                           String // User's last name
-  username                            String              @unique // Unique username
-  email                               String              @unique // Unique email address
-  password                            String // Hashed password
-  gender                              Gender // Gender (MALE or FEMALE)
-  role                                UserRoles           @default(USER) // User's role (default is USER)
-  status                              UserStatus          @default(ACTIVE) // Account status (default is ACTIVE)
-  phone_number                        String? // User's phone number
-  profile_picture                     String? // URL to profile picture (optional)
-  profile_picture_public_id           String? // To store Cloudinary public_id for managing images
-  personal_identity_picture           String? // URL to personal identity document (optional)
-  personal_identity_picture_public_id String? // To store Cloudinary public_id for managing images
-  birth_date                          DateTime            @db.Date // User's date of birth
-  address                             String? // User's address
-  city_id                             Int? // Reference to the user's city
-  country_id                          Int? // Reference to the user's country
-  created_at                          DateTime            @default(now()) // Timestamp when the user was created
-  updated_at                          DateTime?           @default(now()) @updatedAt // Automatically updated on each update
-  deleted_at                          DateTime? // Timestamp when the user was deleted (optional for soft delete)
-  ActivityLog                         ActivityLog[]       @relation("UserActivityLogs")
+  id                                  String              @id @default(uuid())
+  first_name                          String
+  last_name                           String
+  username                            String              @unique
+  email                               String              @unique
+  password                            String
+  gender                              Gender
+  role                                UserRoles           @default(USER)
+  status                              UserStatus          @default(ACTIVE)
+  phone_number                        String?
+  profile_picture                     String?
+  profile_picture_public_id           String?
+  personal_identity_picture           String?
+  personal_identity_picture_public_id String?
+  birth_date                          DateTime            @db.Date
+  address                             String?
+  city_id                             String?
+  country_id                          String?
+  created_at                          DateTime            @default(now())
+  updated_at                          DateTime?           @default(now()) @updatedAt
+  deleted_at                          DateTime?
   userSubscriptions                   userSubscriptions[] @relation("UserSubscriptions")
   Item                                Item[]              @relation("UserItems")
-  city                                City?               @relation(fields: [city_id], references: [id]) // Define the relation
-  country                             Country?            @relation(fields: [country_id], references: [id]) // Define the relation
+  city                                City?               @relation(fields: [city_id], references: [id])
+  country                             Country?            @relation(fields: [country_id], references: [id])
 
-  @@index([first_name, last_name, username, email]) // Index on username and email for quick lookups
+  @@index([first_name, last_name, username, email])
   @@map("users")
 }
 
 model Category {
-  id              Int        @id @default(autoincrement()) // Unique identifier for the category, automatically incremented
-  name_ar         String // Name of the category in Arabic
-  name_en         String // Name of the category in English
-  description_en  String // Description of the category in English
-  description_ar  String // Description of the category in Arabic
-  image_url       String? // URL of the category image, useful for display purposes
-  image_public_id String? // To store Cloudinary public_id for managing images
-  parent_id       Int? // Optional field for hierarchical relationships (ID of the parent category)
-  parent          Category?  @relation("CategoryParent", fields: [parent_id], references: [id]) // Self-referencing relation for parent category
-  created_at      DateTime   @default(now()) // Timestamp for when the category was created
-  updated_at      DateTime?  @default(now()) @updatedAt // Timestamp for the last update to the category
-  deleted_at      DateTime? // Optional field for soft deletion, indicating when the category was deleted
+  id              String     @id @default(uuid())
+  name_ar         String
+  name_en         String
+  description_en  String
+  description_ar  String
+  icon            String?
+  image_url       String?
+  image_public_id String?
+  parent_id       String?
+  parent          Category?  @relation("CategoryParent", fields: [parent_id], references: [id])
+  created_at      DateTime   @default(now())
+  updated_at      DateTime?  @default(now()) @updatedAt
+  deleted_at      DateTime?
   children        Category[] @relation("CategoryParent")
-  Item            Item[]
+  items           Item[]
 
   @@map("categories")
 }
 
 enum ItemCondition {
-  NEW // Item is brand new, unused, and in original packaging.
-  LIKE_NEW // Item is in excellent condition, with very minor signs of use.
-  GOOD // Item is used but in good condition; may have noticeable wear.
-  FAIR // Item is functional but shows significant signs of wear and tear.
-  DAMAGED // Item has physical damage that may affect functionality but can be repaired.
-  NOT_WORKING // Item is not functional and requires repair or parts; sold as-is.
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+  DAMAGED
+  NOT_WORKING
 }
 
 model Item {
-  id          Int           @id @default(autoincrement()) // Unique identifier for the item
-  title       String // Title of the item being traded
-  description String // Detailed description of the item
-  trade_value Decimal       @default(0) @db.Decimal(10, 2) // Value of the item in trade; allows decimal values with 10 total digits and 2 decimal places
-  condition   ItemCondition // Condition of the item (e.g., NEW, LIKE_NEW, GOOD, etc.)
-  city_id     Int // Reference to the city where the item is located
-  country_id  Int // Reference to the country where the item is located
-  user_id     Int // Reference to the user
-  user        User          @relation("UserItems", fields: [user_id], references: [id]) // Relation to the User model
-  is_banner   Boolean       @default(false) // Indicates if the item is pinned or featured for visibility
-  itemImages  ItemImage[] // Relationship to itemImage join table, allowing for flexible user-image associations
-  ActivityLog ActivityLog[] @relation("ItemsActivityLogs") // Relationship to ActivityLog join table, allowing for tracking item-related activities
-  Banner      Banner[]
-  category_id Int // Reference to the category associated with the item
-  category    Category      @relation(fields: [category_id], references: [id]) // Relation to the Category model
-  Country     Country?      @relation(fields: [country_id], references: [id])
-  City        City?         @relation(fields: [city_id], references: [id])
-  created_at  DateTime      @default(now()) // Timestamp of when the item was created
-  updated_at  DateTime?     @default(now()) @updatedAt // Timestamp of the last update to the item
-  deleted_at  DateTime? // Optional field for soft deletion, indicating when the item was deleted
+  id          String        @id @default(uuid())
+  title       String
+  description String
+  trade_value Decimal       @default(0) @db.Decimal(10, 2)
+  condition   ItemCondition
+  city_id     String
+  country_id  String
+  user_id     String
+  user        User          @relation("UserItems", fields: [user_id], references: [id])
+  is_banner   Boolean       @default(false)
+  item_images ItemImage[]
+  banners     Banner[]
+  category_id String
+  category    Category      @relation(fields: [category_id], references: [id])
+  country     Country?      @relation(fields: [country_id], references: [id])
+  city        City?         @relation(fields: [city_id], references: [id])
+  created_at  DateTime      @default(now())
+  updated_at  DateTime?     @default(now()) @updatedAt
+  deleted_at  DateTime?
 
-  @@index([title]) // Index on the item title for quick lookups
+  @@index([title])
   @@map("items")
 }
 
 model ItemImage {
-  id              Int       @id @default(autoincrement()) // Unique identifier for the image
-  image_url       String // URL of the image
-  image_public_id String? // To store Cloudinary public_id for managing images
-  item_id         Int // Foreign key referencing the Item associated with the image
+  id              String    @id @default(uuid())
+  image_url       String
+  image_public_id String?
+  item_id         String
   item            Item      @relation(fields: [item_id], references: [id])
-  created_at      DateTime  @default(now()) // Timestamp of when the image was uploaded
-  updated_at      DateTime? @default(now()) @updatedAt // Timestamp of the last update to the image entry
-  deleted_at      DateTime? // Optional field for soft deletion, indicating when the association was deleted
+  created_at      DateTime  @default(now())
+  updated_at      DateTime? @default(now()) @updatedAt
+  deleted_at      DateTime?
 
   @@map("item_images")
 }
 
-enum ActivityLogAction {
-  CREATE // Represents the action of creating a new resource or entry.
-  UPDATE // Represents the action of updating an existing resource or entry.
-  DELETE // Represents the action of deleting a resource or entry.
-}
-
-model ActivityLog {
-  id         Int               @id @default(autoincrement()) // Unique identifier for the activity log entry
-  action     ActivityLogAction @default(CREATE) // Description of the action performed (e.g., "CREATE", "UPDATE", "DELETE")
-  user_id    Int // Foreign key referencing the User who performed the action
-  user       User              @relation("UserActivityLogs", fields: [user_id], references: [id]) // Relation to the User model
-  item_id    Int // Foreign key referencing the Item that was acted upon
-  item       Item              @relation("ItemsActivityLogs", fields: [item_id], references: [id]) // Relation to the Item model
-  created_at DateTime          @default(now()) // Timestamp for when the activity log entry was created
-  updated_at DateTime?         @default(now()) @updatedAt // Timestamp for the last update to the activity log entry
-  deleted_at DateTime? // Optional field for soft delete; can be used to mark entries as deleted without removing them from the database
-
-  @@map("activity_logs")
-}
-
 model Banner {
-  id         Int       @id @default(autoincrement()) // Unique identifier for the banner
-  item_id    Int // Foreign key referencing the associated Item
-  item       Item      @relation(fields: [item_id], references: [id]) // Relation to the Item model
-  is_active  Boolean   @default(true) // Indicates whether the banner is currently active
-  start_date DateTime  @db.Date // Start date for the banner display
-  end_date   DateTime  @db.Date // End date for the banner display
-  created_at DateTime  @default(now()) // Timestamp for when the banner was created
-  updated_at DateTime? @default(now()) @updatedAt // Timestamp for the last update to the banner
-  deleted_at DateTime? // Optional field for soft delete
+  id         String    @id @default(uuid())
+  item_id    String
+  item       Item      @relation(fields: [item_id], references: [id])
+  is_active  Boolean   @default(true)
+  start_date DateTime? @db.Date
+  end_date   DateTime? @db.Date
+  created_at DateTime  @default(now())
+  updated_at DateTime? @default(now()) @updatedAt
+  deleted_at DateTime?
 
   @@map("banners")
 }
 
 enum SubscriptionsStatus {
-  ACTIVE // Indicates that the subscription is currently active and valid.
-  INACTIVE // Indicates that the subscription is not active, expired, or paused.
-  PAUSED // Indicates that the subscription is temporarily paused.
-  EXPIRED // Indicates that the subscription has expired and is no longer valid.
+  ACTIVE
+  INACTIVE
+  PAUSED
+  EXPIRED
 }
 
 enum SubscriptionsCategories {
-  REGULAR // Standard subscription with no special sponsorship or promotion.
-  SPONSORED // Subscription that is sponsored, possibly by a third party or under a promotional deal.
+  REGULAR
+  SPONSORED
 }
 
 model Subscription {
-  id                   Int                     @id @default(autoincrement()) // Unique identifier for the subscription
-  title_ar             String // Title of the subscription in Arabic
-  title_en             String // Title of the subscription in English
-  description_ar       String // Description of the subscription in Arabic
-  description_en       String // Description of the subscription in English
-  image_url            String? // URL of the image associated with the subscription
-  image_public_id      String? // To store Cloudinary public_id for managing images
-  price                Decimal                 @default(0) @db.Decimal(10, 2) // Regular price of the subscription
-  offer_price          Decimal                 @default(0) @db.Decimal(10, 2) // Discounted or promotional price for the subscription
-  category             SubscriptionsCategories // Enum to categorize the subscription (e.g., REGULAR, SPONSORED)
-  status               SubscriptionsStatus // Enum to indicate if the subscription is ACTIVE or INACTIVE
-  created_at           DateTime                @default(now()) // Timestamp for when the subscription was created
-  updated_at           DateTime?               @default(now()) @updatedAt // Auto-updates the timestamp when the subscription is modified
-  deleted_at           DateTime? // Optional timestamp for soft deletion
-  SubscriptionsOptions SubscriptionsOptions[] // Relation to subscription options for this subscription
+  id                   String                  @id @default(uuid())
+  title_ar             String
+  title_en             String
+  description_ar       String
+  description_en       String
+  price                Decimal                 @default(0) @db.Decimal(10, 2)
+  offer_price          Decimal                 @default(0) @db.Decimal(10, 2)
+  category             SubscriptionsCategories
+  status               SubscriptionsStatus
+  created_at           DateTime                @default(now())
+  updated_at           DateTime?               @default(now()) @updatedAt
+  deleted_at           DateTime?
+  subscription_options SubscriptionsOptions[]
 
   @@map("subscriptions")
 }
 
 model SubscriptionsOptions {
-  id               Int          @id @default(autoincrement()) // Unique identifier for the subscription option
-  name_ar          String // Name of the option in Arabic
-  name_en          String // Name of the option in English
-  subscriptions_id Int // Foreign key to the related subscription
-  subscription     Subscription @relation(fields: [subscriptions_id], references: [id]) // Relationship to the Subscription model
-  created_at       DateTime     @default(now()) // Timestamp for when the option was created
-  updated_at       DateTime?    @default(now()) @updatedAt // Auto-updated timestamp for when the option was last modified
-  deleted_at       DateTime? // Optional timestamp for soft deletion
+  id               String       @id @default(uuid())
+  name_ar          String
+  name_en          String
+  subscriptions_id String
+  subscription     Subscription @relation(fields: [subscriptions_id], references: [id])
+  created_at       DateTime     @default(now())
+  updated_at       DateTime?    @default(now()) @updatedAt
+  deleted_at       DateTime?
 
   @@map("subscription_options")
 }
 
 model userSubscriptions {
-  id               Int       @id @default(autoincrement()) // Unique identifier for the user subscription
-  user_id          Int // Foreign key referencing the user
-  user             User      @relation("UserSubscriptions", fields: [user_id], references: [id]) // Relation to the User model
-  payment_details  Json // JSON field to store payment-related information (like transaction details)
-  subscriptions_id Int // Foreign key referencing the subscription (or subscription category)
-  created_at       DateTime  @default(now()) // Timestamp for when the subscription was created
-  updated_at       DateTime? // Optional timestamp for when the subscription was last updated
-  deleted_at       DateTime? // Optional timestamp for soft deletion
+  id               String    @id @default(uuid())
+  user_id          String
+  user             User      @relation("UserSubscriptions", fields: [user_id], references: [id])
+  payment_details  Json
+  subscriptions_id Int
+  created_at       DateTime  @default(now())
+  updated_at       DateTime?
+  deleted_at       DateTime?
 
   @@map("user_subscriptions")
 }
 
 model Country {
-  id         Int       @id @default(autoincrement()) // Unique identifier for the country
-  name_ar    String // Name of the country in Arabic
-  name_en    String // Name of the country in English
-  created_at DateTime  @default(now()) // Timestamp for when the country was created
-  updated_at DateTime? @default(now()) @updatedAt // Timestamp for the last update to the country
-  deleted_at DateTime? // Optional field for soft deletion
-  city       City[] // Relation to the City model
+  id         String    @id @default(uuid())
+  name_ar    String
+  name_en    String
+  created_at DateTime  @default(now())
+  updated_at DateTime? @default(now()) @updatedAt
+  deleted_at DateTime?
+  cities     City[]
   User       User[]
   Item       Item[]
 
@@ -234,14 +208,14 @@ model Country {
 }
 
 model City {
-  id         Int       @id @default(autoincrement()) // Unique identifier for the city
-  name_ar    String // Name of the city in Arabic
-  name_en    String // Name of the city in English
-  country_id Int // Reference to the country where the city is located
-  country    Country   @relation(fields: [country_id], references: [id]) // Relation to the Country model
-  created_at DateTime  @default(now()) // Timestamp for when the city was created
-  updated_at DateTime? @default(now()) @updatedAt // Timestamp for the last update to the city
-  deleted_at DateTime? // Optional field for soft deletion
+  id         String    @id @default(uuid())
+  name_ar    String
+  name_en    String
+  country_id String
+  country    Country   @relation(fields: [country_id], references: [id])
+  created_at DateTime  @default(now())
+  updated_at DateTime? @default(now()) @updatedAt
+  deleted_at DateTime?
   User       User[]
   Item       Item[]
 

@@ -19,7 +19,7 @@ export class SubscriptionsController {
   @ApiResponse({ status: 200, description: 'Subscription found.' })
   @ApiResponse({ status: 404, description: 'Subscription not found.' })
   @Get(':id')
-  async findOne(@Param('id') id: number) {
+  async findOne(@Param('id') id: string) {
     return this._subscriptionsService.findOne(id);
   }
 
@@ -33,14 +33,14 @@ export class SubscriptionsController {
   @ApiOperation({ summary: 'Update a subscription by ID' })
   @ApiResponse({ status: 200, description: 'Subscription updated.' })
   @Put(':id')
-  async update(@Param('id') id: number, @Body() updateSubscriptionDto: CreateSubscriptionDTO) {
+  async update(@Param('id') id: string, @Body() updateSubscriptionDto: CreateSubscriptionDTO) {
     return this._subscriptionsService.update(id, updateSubscriptionDto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a subscription by ID' })
   @ApiResponse({ status: 204, description: 'Subscription deleted.' })
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id') id: string) {
     return this._subscriptionsService.remove(id);
   }
 }

@@ -20,7 +20,7 @@ export class CitiesController {
   @ApiResponse({ status: 200, description: 'City found.' })
   @ApiResponse({ status: 404, description: 'City not found.' })
   @Get(':id')
-  async findOne(@Param('id') id: number) {
+  async findOne(@Param('id') id: string) {
     return this._citiesService.findOne(id);
   }
 
@@ -36,7 +36,7 @@ export class CitiesController {
   @ApiOperation({ summary: 'Update a city by ID' })
   @ApiResponse({ status: 200, description: 'City updated.' })
   @Put(':id')
-  async update(@Param('id') id: number, @Body() updateCityDto: CreateCityDto) {
+  async update(@Param('id') id: string, @Body() updateCityDto: CreateCityDto) {
     return this._citiesService.update(id, updateCityDto);
   }
 
@@ -44,7 +44,7 @@ export class CitiesController {
   @ApiOperation({ summary: 'Delete a city by ID' })
   @ApiResponse({ status: 204, description: 'City deleted.' })
   @Delete(':id')
-  async remove(@Param('id') id: number) {
+  async remove(@Param('id') id: string) {
     return this._citiesService.remove(id);
   }
 }

@@ -1,77 +1,23 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "UserRoles" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'USER', 'MODERATOR');
 
-  - You are about to drop the `ActivityLog` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Banner` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Category` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Item` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Subscription` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `SubscriptionsOptions` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `User` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `itemImage` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `userItems` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `userSubscriptions` table. If the table is not empty, all the data it contains will be lost.
+-- CreateEnum
+CREATE TYPE "UserStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'SUSPENDED');
 
-*/
--- DropForeignKey
-ALTER TABLE "ActivityLog" DROP CONSTRAINT "ActivityLog_item_id_fkey";
+-- CreateEnum
+CREATE TYPE "Gender" AS ENUM ('MALE', 'FEMALE');
 
--- DropForeignKey
-ALTER TABLE "ActivityLog" DROP CONSTRAINT "ActivityLog_user_id_fkey";
+-- CreateEnum
+CREATE TYPE "ItemCondition" AS ENUM ('NEW', 'LIKE_NEW', 'GOOD', 'FAIR', 'DAMAGED', 'NOT_WORKING');
 
--- DropForeignKey
-ALTER TABLE "Banner" DROP CONSTRAINT "Banner_item_id_fkey";
+-- CreateEnum
+CREATE TYPE "ActivityLogAction" AS ENUM ('CREATE', 'UPDATE', 'DELETE');
 
--- DropForeignKey
-ALTER TABLE "Category" DROP CONSTRAINT "Category_parent_id_fkey";
+-- CreateEnum
+CREATE TYPE "SubscriptionsStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'PAUSED', 'EXPIRED');
 
--- DropForeignKey
-ALTER TABLE "Item" DROP CONSTRAINT "Item_category_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "SubscriptionsOptions" DROP CONSTRAINT "SubscriptionsOptions_subscriptions_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "itemImage" DROP CONSTRAINT "itemImage_item_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "userItems" DROP CONSTRAINT "userItems_item_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "userItems" DROP CONSTRAINT "userItems_user_id_fkey";
-
--- DropForeignKey
-ALTER TABLE "userSubscriptions" DROP CONSTRAINT "userSubscriptions_user_id_fkey";
-
--- DropTable
-DROP TABLE "ActivityLog";
-
--- DropTable
-DROP TABLE "Banner";
-
--- DropTable
-DROP TABLE "Category";
-
--- DropTable
-DROP TABLE "Item";
-
--- DropTable
-DROP TABLE "Subscription";
-
--- DropTable
-DROP TABLE "SubscriptionsOptions";
-
--- DropTable
-DROP TABLE "User";
-
--- DropTable
-DROP TABLE "itemImage";
-
--- DropTable
-DROP TABLE "userItems";
-
--- DropTable
-DROP TABLE "userSubscriptions";
+-- CreateEnum
+CREATE TYPE "SubscriptionsCategories" AS ENUM ('REGULAR', 'SPONSORED');
 
 -- CreateTable
 CREATE TABLE "users" (
@@ -84,15 +30,17 @@ CREATE TABLE "users" (
     "gender" "Gender" NOT NULL,
     "role" "UserRoles" NOT NULL DEFAULT 'USER',
     "status" "UserStatus" NOT NULL DEFAULT 'ACTIVE',
-    "phone_number" TEXT NOT NULL,
+    "phone_number" TEXT,
     "profile_picture" TEXT,
+    "profile_picture_public_id" TEXT,
     "personal_identity_picture" TEXT,
-    "birth_date" TIMESTAMP(3) NOT NULL,
-    "address" TEXT NOT NULL,
+    "personal_identity_picture_public_id" TEXT,
+    "birth_date" DATE NOT NULL,
+    "address" TEXT,
     "city_id" INTEGER,
     "country_id" INTEGER,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "updated_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
@@ -105,10 +53,11 @@ CREATE TABLE "categories" (
     "name_en" TEXT NOT NULL,
     "description_en" TEXT NOT NULL,
     "description_ar" TEXT NOT NULL,
-    "image_url" TEXT NOT NULL,
+    "image_url" TEXT,
+    "image_public_id" TEXT,
     "parent_id" INTEGER,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "updated_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "categories_pkey" PRIMARY KEY ("id")
@@ -124,11 +73,11 @@ CREATE TABLE "items" (
     "city_id" INTEGER NOT NULL,
     "country_id" INTEGER NOT NULL,
     "user_id" INTEGER NOT NULL,
-    "is_panner" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "deleted_at" TIMESTAMP(3),
+    "is_banner" BOOLEAN NOT NULL DEFAULT false,
     "category_id" INTEGER NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "items_pkey" PRIMARY KEY ("id")
 );
@@ -137,9 +86,10 @@ CREATE TABLE "items" (
 CREATE TABLE "item_images" (
     "id" SERIAL NOT NULL,
     "image_url" TEXT NOT NULL,
+    "image_public_id" TEXT,
     "item_id" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "updated_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "item_images_pkey" PRIMARY KEY ("id")
@@ -152,7 +102,7 @@ CREATE TABLE "activity_logs" (
     "user_id" INTEGER NOT NULL,
     "item_id" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "updated_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "activity_logs_pkey" PRIMARY KEY ("id")
@@ -163,10 +113,10 @@ CREATE TABLE "banners" (
     "id" SERIAL NOT NULL,
     "item_id" INTEGER NOT NULL,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "start_date" TIMESTAMP(3) NOT NULL,
-    "end_date" TIMESTAMP(3) NOT NULL,
+    "start_date" DATE NOT NULL,
+    "end_date" DATE NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "updated_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "banners_pkey" PRIMARY KEY ("id")
@@ -179,13 +129,14 @@ CREATE TABLE "subscriptions" (
     "title_en" TEXT NOT NULL,
     "description_ar" TEXT NOT NULL,
     "description_en" TEXT NOT NULL,
-    "image_url" TEXT NOT NULL,
+    "image_url" TEXT,
+    "image_public_id" TEXT,
     "price" DECIMAL(10,2) NOT NULL DEFAULT 0,
     "offer_price" DECIMAL(10,2) NOT NULL DEFAULT 0,
     "category" "SubscriptionsCategories" NOT NULL,
     "status" "SubscriptionsStatus" NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "updated_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "subscriptions_pkey" PRIMARY KEY ("id")
@@ -198,7 +149,7 @@ CREATE TABLE "subscription_options" (
     "name_en" TEXT NOT NULL,
     "subscriptions_id" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "updated_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "subscription_options_pkey" PRIMARY KEY ("id")
@@ -217,6 +168,31 @@ CREATE TABLE "user_subscriptions" (
     CONSTRAINT "user_subscriptions_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "countries" (
+    "id" SERIAL NOT NULL,
+    "name_ar" TEXT NOT NULL,
+    "name_en" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at" TIMESTAMP(3),
+
+    CONSTRAINT "countries_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "cities" (
+    "id" SERIAL NOT NULL,
+    "name_ar" TEXT NOT NULL,
+    "name_en" TEXT NOT NULL,
+    "country_id" INTEGER NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at" TIMESTAMP(3),
+
+    CONSTRAINT "cities_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_username_key" ON "users"("username");
 
@@ -224,10 +200,16 @@ CREATE UNIQUE INDEX "users_username_key" ON "users"("username");
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE INDEX "users_username_email_idx" ON "users"("username", "email");
+CREATE INDEX "users_first_name_last_name_username_email_idx" ON "users"("first_name", "last_name", "username", "email");
 
 -- CreateIndex
 CREATE INDEX "items_title_idx" ON "items"("title");
+
+-- AddForeignKey
+ALTER TABLE "users" ADD CONSTRAINT "users_city_id_fkey" FOREIGN KEY ("city_id") REFERENCES "cities"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "users" ADD CONSTRAINT "users_country_id_fkey" FOREIGN KEY ("country_id") REFERENCES "countries"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "categories" ADD CONSTRAINT "categories_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -237,6 +219,12 @@ ALTER TABLE "items" ADD CONSTRAINT "items_user_id_fkey" FOREIGN KEY ("user_id") 
 
 -- AddForeignKey
 ALTER TABLE "items" ADD CONSTRAINT "items_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "items" ADD CONSTRAINT "items_country_id_fkey" FOREIGN KEY ("country_id") REFERENCES "countries"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "items" ADD CONSTRAINT "items_city_id_fkey" FOREIGN KEY ("city_id") REFERENCES "cities"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "item_images" ADD CONSTRAINT "item_images_item_id_fkey" FOREIGN KEY ("item_id") REFERENCES "items"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -255,3 +243,6 @@ ALTER TABLE "subscription_options" ADD CONSTRAINT "subscription_options_subscrip
 
 -- AddForeignKey
 ALTER TABLE "user_subscriptions" ADD CONSTRAINT "user_subscriptions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "cities" ADD CONSTRAINT "cities_country_id_fkey" FOREIGN KEY ("country_id") REFERENCES "countries"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

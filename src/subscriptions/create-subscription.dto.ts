@@ -1,4 +1,4 @@
-import { IsString, IsDecimal, IsEnum, IsInt, IsOptional, IsDate } from 'class-validator';
+import { IsString, IsDecimal, IsEnum, IsOptional, IsDate } from 'class-validator';
 
 // Enums for Subscription Category and Status
 enum SubscriptionsCategories {
@@ -14,14 +14,14 @@ enum SubscriptionsStatus {
 }
 
 interface SubscriptionOption {
-  id?: number;
+  id?: string;
   name_ar: string;
   name_en: string;
 }
 
 export class CreateSubscriptionDTO {
-  @IsInt()
-  id: number; // Unique identifier for the subscription
+  @IsString()
+  id: string; // Unique identifier for the subscription
 
   @IsString()
   title_ar: string; // Title of the subscription in Arabic
@@ -35,10 +35,6 @@ export class CreateSubscriptionDTO {
   @IsString()
   description_en: string; // Description of the subscription in English
 
-  @IsString()
-  @IsOptional()
-  image_url?: string; // URL of the image associated with the subscription
-
   @IsDecimal()
   price: number; // Regular price of the subscription
 
@@ -51,12 +47,11 @@ export class CreateSubscriptionDTO {
   @IsEnum(SubscriptionsStatus)
   status: SubscriptionsStatus; // Enum to indicate if the suscription is ACTIVE or INACTIVE
 
-  
   @IsOptional()
-  SubscriptionsOptions:SubscriptionOption[]; // Array of subscription options
+  subscription_options:SubscriptionOption[]; // Array of subscription options
 
   @IsDate()
-  created_at: Date; // Timestamp for when the subscription was created
+  created_at?: Date; // Timestamp for when the subscription was created
 
   @IsDate()
   @IsOptional()

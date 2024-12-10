@@ -1,4 +1,3 @@
-// src/items/dto/create-item.dto.ts
 import { IsArray, IsBoolean, IsDate, IsDecimal, IsInt, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -23,14 +22,14 @@ export class CreateItemDto {
   @IsString()
   condition: ItemCondition; // Adjust this if you are using an enum for ItemCondition
 
-  @IsInt()
-  city_id: number;
+  @IsString()
+  city_id: string;
 
-  @IsInt()
-  country_id: number;
+  @IsString()
+  country_id: string;
 
-  @IsInt()
-  user_id: number;
+  @IsString()
+  user_id: string;
 
   @IsBoolean()
   @IsOptional()
@@ -51,7 +50,7 @@ export class CreateItemDto {
   deleted_at?: Date;
 
   @IsInt()
-  category_id: number;
+  category_id: string;
 
   @IsArray()
   image_urls?: string[];
