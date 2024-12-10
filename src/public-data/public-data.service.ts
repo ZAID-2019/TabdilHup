@@ -131,9 +131,9 @@ export class PublicDataService {
       );
     }
   }
-  async getFeaturedItems(): Promise<unknown> {
+  async getPopularItems(): Promise<unknown> {
     try {
-      const featuredItemsCollection = await this._prismaService.category.findMany({
+      const popularItemsCollection = await this._prismaService.category.findMany({
         where: { parent_id: null },
         select: {
           id: true,
@@ -149,6 +149,7 @@ export class PublicDataService {
                 select: {
                   id: true,
                   title: true,
+                  description: true,
                   item_images: {
                     select: {
                       image_url: true,
@@ -158,11 +159,10 @@ export class PublicDataService {
               },
             },
           },
-          
         },
       });
 
-    const featuredItems = featuredItemsCollection.map((category) => {
+      const popularItems = popularItemsCollection.map((category) => {
         // Extract main category details
         const mainCategory = {
           id: category.id,
@@ -170,7 +170,7 @@ export class PublicDataService {
           name_en: category.name_en,
           items: [],
         };
-    
+
         // Aggregate items from all children categories with items
         if (category.children && category.children.length > 0) {
           category.children.forEach((child) => {
@@ -179,18 +179,63 @@ export class PublicDataService {
             }
           });
         }
-    
+
         // Randomize and limit the items to 2
         mainCategory.items = mainCategory.items.sort(() => 0.5 - Math.random()).slice(0, 2);
-    
+
         return mainCategory;
       });
-  
-      return { featuredItems, status: 'success', message: 'Featured Items Successfully Retrieved' };
+
+      return { popularItems, status: 'success', message: 'Popular Items Successfully Retrieved' };
     } catch (error) {
-      this.logger.error(`Error during get featured items: ${error.message}`, error.stack);
+      this.logger.error(`Error during get popular items: ${error.message}`, error.stack);
       throw new HttpException(
-        { status: 'error', message: 'An error occurred while getting featured items', details: error.message },
+        { status: 'error', message: 'An error occurred while getting popular items', details: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getItemsByFilter(categoryId: string, limit: number, offset: number): Promise<unknown> {
+    try {
+      const category = await this._prismaService.category.findUnique({
+        where: { id: categoryId },
+        select: {
+          id: true,
+          name_ar: true,
+          name_en: true,
+          children: {
+            select: {
+              id: true,
+              name_ar: true,
+              name_en: true,
+            },
+          },
+        },
+      });
+      console.log({ category });
+
+      const items = await this._prismaService.item.findMany({
+        where: { category_id: categoryId, deleted_at: null },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          item_images: {
+            select: {
+              image_url: true,
+            },
+          },
+        },
+        take: limit,
+        skip: offset,
+        orderBy: { created_at: 'desc' },
+      });
+      return { items, status: 'success', message: 'Items by Category Successfully Retrieved' };
+    } catch (error) {
+      this.logger.error(`Error during get items by category: ${error.message}`, error.stack);
+      throw new HttpException(
+        { status: 'error', message: 'An error occurred while getting items by category', details: error.message },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

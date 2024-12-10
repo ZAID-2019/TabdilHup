@@ -29,8 +29,8 @@ export class PublicDataController {
     return this._publicDataService.getSubscriptions();
   }
 
-  @Get('/featured-items')
-  async getFeaturedItems() {
-    return this._publicDataService.getFeaturedItems();
+  @Get('/popular-items')
+  async getPopularItems() {
+    return this._publicDataService.getPopularItems();
   }
 }
