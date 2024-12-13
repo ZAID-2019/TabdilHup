@@ -9,9 +9,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersController {
   constructor(private readonly _usersService: UsersService) {} // Inject UsersService
 
-  @Get()
-  @ApiOperation({ summary: 'Get all users' }) // Summary of the endpoint
-  @ApiResponse({ status: 200, description: 'List of users.' }) // Response for successful call
   // Get a list of users with pagination
   @Get()
   async findAll(@Query('limit') limit: number = 5000, @Query('offset') offset: number = 0) {

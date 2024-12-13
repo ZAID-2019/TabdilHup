@@ -4,13 +4,11 @@ import { IsString, IsDecimal, IsEnum, IsOptional, IsDate } from 'class-validator
 enum SubscriptionsCategories {
   REGULAR = 'REGULAR',
   SPONSORED = 'SPONSORED',
-  // Add other categories if needed
 }
 
 enum SubscriptionsStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
-  // Add other statuses if needed
 }
 
 interface SubscriptionOption {
@@ -45,7 +43,7 @@ export class CreateSubscriptionDTO {
   category: SubscriptionsCategories; // Enum to categorize the subscription
 
   @IsEnum(SubscriptionsStatus)
-  status: SubscriptionsStatus; // Enum to indicate if the suscription is ACTIVE or INACTIVE
+  status: SubscriptionsStatus; // Enum to indicate if the subscription is ACTIVE or INACTIVE
 
   @IsOptional()
   subscription_options:SubscriptionOption[]; // Array of subscription options
