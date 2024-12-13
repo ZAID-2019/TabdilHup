@@ -15,7 +15,7 @@ export class SubscriptionsService {
       offset = Number(offset) || 0;
       const [subscriptions, total] = await Promise.all([
         this._prismaService.subscription.findMany({
-          where: { deleted_at: null , category: 'REGULAR'},
+          where: { deleted_at: null, category: 'REGULAR' },
           take: limit,
           skip: offset,
           select: {
@@ -49,7 +49,6 @@ export class SubscriptionsService {
       ]);
 
       this.logger.verbose(`Successfully Retrieved ${subscriptions.length} Subscriptions`);
-      // return ResponseUtil.success('Find All Subscriptions', { subscriptions, total });
       return { subscriptions, total, status: 'success', message: 'Find All Subscriptions' };
     } catch (error) {
       this.logger.error(`Error In Find All Subscriptions: ${error.message}`, error.stack);
@@ -64,7 +63,7 @@ export class SubscriptionsService {
   async findOne(id: string): Promise<unknown> {
     try {
       const subscription = await this._prismaService.subscription.findUnique({
-        where: { id: id , deleted_at: null},
+        where: { id: id, deleted_at: null },
         select: {
           id: true,
           title_ar: true,
@@ -87,7 +86,7 @@ export class SubscriptionsService {
           },
         },
       });
-      // return ResponseUtil.success('Find subscription By ID', subscription);
+      this.logger.verbose(`Successfully Retrieved Subscription with ID: ${id}`);
       return { subscription, status: 'success', message: 'Find Subscriptions' };
     } catch (error) {
       this.logger.error(`Error In Find subscription By ID: ${error.message}`, error.stack);
@@ -123,89 +122,14 @@ export class SubscriptionsService {
           })),
         });
       }
-      return ResponseUtil.success('subscription Created', subscription);
+      this.logger.verbose(`Successfully Created Subscription with ID: ${subscription.id}`);
+      return { subscription, status: 'success', message: 'Subscription Created' };
     } catch (error) {
       this.logger.error(`Error In Create subscription: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while creating subscription', 'CREATE_FAILED', error?.message);
     }
   }
 
-  async update2(id: string, data: CreateSubscriptionDTO): Promise<unknown> {
-    try {
-      // Update the main subscription details
-      await this._prismaService.subscription.update({
-        where: { id: id },
-        data: {
-          title_ar: data.title_ar,
-          title_en: data.title_en,
-          description_ar: data.description_ar,
-          description_en: data.description_en,
-          price: data.price,
-          offer_price: data.offer_price,
-          category: data.category,
-          status: data.status,
-        },
-      });
-
-      if (data.subscription_options && data.subscription_options.length > 0) {
-        // console.log('Updating subscription options' , data.subscription_options);
-        
-        // Fetch existing options for the subscription
-        // const existingOptions = await this._prismaService.subscriptionsOptions.findMany({
-        //   where: { subscriptions_id: id },
-        // });
-
-        // Separate the options into "to update" and "to create"
-        // const existingOptionIds = existingOptions.map((option) => option.id);
-        // const receivedOptionIds = data.SubscriptionsOptions.map((option: { id?: string }) => option.id).filter(Boolean);
-
-        // const toUpdate = data.SubscriptionsOptions.filter(
-        //   (option: { id?: number }) => option.id && existingOptionIds.includes(option.id.toString()),
-        // );
-
-        // const toCreate = data.subscription_options.filter((option: { id?: number }) => !option.id);
-
-        // const toDelete = existingOptionIds.filter((id) => !receivedOptionIds.includes(id));
-
-        // console.log({ toUpdate, toCreate, toDelete });
-
-        // Update existing options
-        // for (const option of toUpdate) {
-        //   await this._prismaService.subscriptionsOptions.update({
-        //     where: { id: option.id },
-        //     data: {
-        //       name_ar: option.name_ar,
-        //       name_en: option.name_en,
-        //     },
-        //   });
-        // }
-
-        // Create new options
-        // if (toCreate.length > 0) {
-        //   await this._prismaService.subscriptionsOptions.createMany({
-        //     data: toCreate.map((option) => ({
-        //       name_ar: option.name_ar,
-        //       name_en: option.name_en,
-        //       subscriptions_id: id, // Link to the existing subscription
-        //     })),
-        //   });
-        // }
-
-        // Soft delete options
-        // if (toDelete.length > 0) {
-        //   await this._prismaService.subscriptionsOptions.updateMany({
-        //     where: { id: { in: toDelete } },
-        //     data: { deleted_at: new Date() }, // Set deleted_at timestamp
-        //   });
-        // }
-      }
-      const result = await this.findOne(id);
-      return ResponseUtil.success('Subscription updated successfully', result);
-    } catch (error) {
-      this.logger.error(`Error in updating subscription: ${error.message}`, error.stack);
-      return ResponseUtil.error('An error occurred while updating the subscription', 'UPDATE_FAILED', error?.message);
-    }
-  }
   async update(id: string, data: CreateSubscriptionDTO): Promise<unknown> {
     try {
       // Update the main subscription details
@@ -222,25 +146,25 @@ export class SubscriptionsService {
           status: data.status,
         },
       });
-  
+
       if (data.subscription_options && data.subscription_options.length > 0) {
         // Fetch existing options for the subscription
         const existingOptions = await this._prismaService.subscriptionsOptions.findMany({
           where: { subscriptions_id: id }, // Use UUID for filtering
         });
-  
+
         // Separate the options into "to update", "to create", and "to delete"
         const existingOptionIds = existingOptions.map((option) => option.id);
         const receivedOptionIds = data.subscription_options.map((option: { id?: string }) => option.id).filter(Boolean);
-  
+
         const toUpdate = data.subscription_options.filter(
           (option: { id?: string }) => option.id && existingOptionIds.includes(option.id),
         );
-  
+
         const toCreate = data.subscription_options.filter((option: { id?: string }) => !option.id);
-  
+
         const toDelete = existingOptionIds.filter((id) => !receivedOptionIds.includes(id));
-  
+
         // Update existing options
         for (const option of toUpdate) {
           await this._prismaService.subscriptionsOptions.update({
@@ -251,7 +175,7 @@ export class SubscriptionsService {
             },
           });
         }
-  
+
         // Create new options
         if (toCreate.length > 0) {
           await this._prismaService.subscriptionsOptions.createMany({
@@ -262,7 +186,7 @@ export class SubscriptionsService {
             })),
           });
         }
-  
+
         // Soft delete options
         if (toDelete.length > 0) {
           await this._prismaService.subscriptionsOptions.updateMany({
@@ -271,7 +195,7 @@ export class SubscriptionsService {
           });
         }
       }
-
+      this.logger.verbose(`Successfully Updated Subscription with ID: ${id}`);
       const result = await this.findOne(id); // Use UUID for the findOne function
       return result;
     } catch (error) {
@@ -279,11 +203,10 @@ export class SubscriptionsService {
       return ResponseUtil.error('An error occurred while updating the subscription', 'UPDATE_FAILED', error?.message);
     }
   }
-  
 
   async remove(id: string): Promise<unknown> {
     try {
-      const subscription = await this._prismaService.subscription.update({
+      await this._prismaService.subscription.update({
         where: { id: id },
         data: {
           deleted_at: new Date(),
@@ -293,7 +216,8 @@ export class SubscriptionsService {
         where: { subscriptions_id: id },
         data: { deleted_at: new Date() }, // Set deleted_at timestamp
       });
-      return ResponseUtil.success('subscription Deleted', subscription);
+      this.logger.verbose(`Successfully Soft Deleted Subscription with ID: ${id}`);
+      return { status: 'success', message: 'Successfully Subscription Soft Deleted' };
     } catch (error) {
       this.logger.error(`Error In Delete subscription: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while deleting subscription', 'DELETE_FAILED', error?.message);
