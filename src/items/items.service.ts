@@ -243,9 +243,7 @@ export class ItemsService {
   }
 
   async create(data: CreateItemDto): Promise<unknown> {
-    try {
-      console.log(data);
-      
+    try {      
       const item = await this._prismaService.item.create({
         data: {
           title: data.title,
