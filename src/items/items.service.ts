@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+    import { Injectable, Logger } from '@nestjs/common';
 import { ResponseUtil } from 'src/common/response.util';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateItemDto } from './create-item.dto';
@@ -244,6 +244,8 @@ export class ItemsService {
 
   async create(data: CreateItemDto): Promise<unknown> {
     try {
+      console.log(data);
+      
       const item = await this._prismaService.item.create({
         data: {
           title: data.title,
