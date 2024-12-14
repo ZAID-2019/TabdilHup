@@ -4,6 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { hash } from 'bcrypt';
 import { ResponseUtil } from 'src/common/response.util';
+import { UserStatus } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -29,6 +30,13 @@ export class UsersService {
             email: true,
             city: { select: { id: true, name_en: true, name_ar: true } },
             country: { select: { id: true, name_en: true, name_ar: true } },
+            gender: true,
+            birth_date: true,
+            profile_picture: true,
+            role: true,
+            status: true,
+            address: true,
+            user_subscriptions: true
           },
           orderBy: {
             created_at: 'desc', // Change 'created_at' to your desired field
@@ -43,16 +51,39 @@ export class UsersService {
       return ResponseUtil.success('Find All Users', { users, total });
     } catch (error) {
       this.logger.error(`Error In Find All Users: ${error.message}`, error.stack);
-      return ResponseUtil.error('An error occurred while searching for medicines', 'SEARCH_FAILED', error?.message);
+      return ResponseUtil.error('An error occurred while searching for users', 'SEARCH_FAILED', error?.message);
     }
   }
 
   // Find a user by ID
   async findOne(id: string): Promise<unknown> {
-    const user = await this._prismaService.user.findUnique({
-      where: { id: id },
-    });
-    return user; // Type assertion to ensure correct type
+    try {
+      const user = await this._prismaService.user.findUnique({
+        where: { id: id, status: UserStatus.ACTIVE , deleted_at: null },
+        select: {
+          id: true,
+          last_name: true,
+          first_name: true,
+          username: true,
+          phone_number: true,
+          email: true,
+          city: { select: { id: true, name_en: true, name_ar: true } },
+          country: { select: { id: true, name_en: true, name_ar: true } },
+          gender: true,
+          birth_date: true,
+          profile_picture: true,
+          role: true,
+          status: true,
+          address: true,
+          user_subscriptions: true
+        },
+      });
+      this.logger.verbose(`Successfully Retrieved User with ID: ${id}`);
+      return { user, status: 'success', message: 'Find One User' };
+    } catch (error) {
+      this.logger.error(`Error In Find One User: ${error.message}`, error.stack);
+      return ResponseUtil.error('An error occurred while searching for users', 'SEARCH_FAILED', error?.message);
+    }
   }
 
   // Create a new user
@@ -62,7 +93,7 @@ export class UsersService {
       const hashedPassword = await hash(data.password, 10);
 
       //? Split and format the birth_date (assuming format is YYYY-MM-DD)
-      let birthDate;
+      let birthDate = null;
       if (data.birth_date) {
         const [year, month, day] = data.birth_date.toString().split('-');
         birthDate = new Date(`${year}-${month}-${day}`);
@@ -77,14 +108,14 @@ export class UsersService {
         },
       }); // Create a new user with provided data
       this.logger.verbose('User created successfully');
-      return ResponseUtil.success('User created successfully', createUser);
+      return {createUser, status: 'success', message: 'User created successfully'};
     } catch (error) {
       return ResponseUtil.error(error.message, 'CREATE_FAILED', error?.message);
     }
   }
 
   // Update an existing user by ID
-  async update(id: string, data: UpdateUserDto): Promise<unknown> {
+  async update3(id: string, data: UpdateUserDto): Promise<unknown> {
     const user = await this._prismaService.user.findUnique({ where: { id: id } }); // Check if the user exists
     if (!user) throw new NotFoundException(`User not found`); // Throw error if user doesn't exist
 
@@ -93,6 +124,40 @@ export class UsersService {
       data, // Provide the updated data
     });
   }
+
+  async update(id: string, data: UpdateUserDto): Promise<unknown> {
+    try {
+
+      const user = await this._prismaService.user.findUnique({ where: { id: id } }); // Check if the user exists
+      if (!user) throw new NotFoundException(`User not found`); // Throw error if user doesn't exist
+  
+      const updateData: any = { ...data }; // Start with the provided data
+  
+      //? Hash the password if it's provided
+      if (data.password) {
+        updateData.password = await hash(data.password, 10); // Hash the new password
+      }
+  
+      //? Format the birth_date if it's provided
+      if (data.birth_date) {
+        const [year, month, day] = data.birth_date.toString().split('-');
+        updateData.birth_date = new Date(`${year}-${month}-${day}`);
+      }
+  
+      //? Update the user using Prisma
+      const updatedUser = await this._prismaService.user.update({
+        where: { id }, // Update user by ID
+        data: updateData,
+      });
+  
+      this.logger.verbose('User updated successfully');
+      return { updatedUser, status: 'success', message: 'User updated successfully' };
+    } catch (error) {
+      this.logger.error(`Error updating user: ${error.message}`, error.stack);
+      return ResponseUtil.error('An error occurred while updating the user', 'UPDATE_FAILED', error?.message);
+    }
+  }
+  
 
   // Soft delete a user by ID
   async remove(id: string): Promise<unknown> {

@@ -201,6 +201,12 @@ export class CategoriesService {
           deleted_at: new Date(),
         },
       });
+      await this._prismaService.category.updateMany({
+        where: { parent_id: id },
+        data: {
+          deleted_at: new Date(),
+        },
+      });
       return { status: 'success', message: 'Category Deleted Successfully' };
       // return ResponseUtil.success('Category deleted successfully', null, 204);
     } catch (error) {

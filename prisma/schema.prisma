@@ -48,7 +48,7 @@ model User {
   updated_at                          DateTime?           @default(now()) @updatedAt
   deleted_at                          DateTime?
   user_subscriptions                  userSubscriptions[] @relation("UserSubscriptions")
-  items                               Item[]              @relation("UserItems")
+  items                               Item[]              @relation()
   city                                City?               @relation(fields: [city_id], references: [id])
   country                             Country?            @relation(fields: [country_id], references: [id])
 
@@ -71,7 +71,7 @@ model Category {
   updated_at      DateTime?  @default(now()) @updatedAt
   deleted_at      DateTime?
   children        Category[] @relation("CategoryParent")
-  items           Item[]
+  items           Item[] @relation("CategoryItems")
 
   @@map("categories")
 }
@@ -94,14 +94,14 @@ model Item {
   city_id     String
   country_id  String
   user_id     String
-  user        User          @relation("UserItems", fields: [user_id], references: [id])
   is_banner   Boolean       @default(false)
   item_images ItemImage[]
   banners     Banner[]
   category_id String
-  category    Category      @relation(fields: [category_id], references: [id])
-  country     Country?      @relation(fields: [country_id], references: [id])
-  city        City?         @relation(fields: [city_id], references: [id])
+  category    Category      @relation("CategoryItems" , fields: [category_id], references: [id])
+  country     Country       @relation(fields: [country_id], references: [id])
+  city        City          @relation(fields: [city_id], references: [id])
+  user        User          @relation(fields: [user_id], references: [id])
   created_at  DateTime      @default(now())
   updated_at  DateTime?     @default(now()) @updatedAt
   deleted_at  DateTime?
