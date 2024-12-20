@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsDate, IsDecimal, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum ItemCondition {
@@ -18,7 +18,7 @@ export class CreateItemDto {
   @IsNotEmpty({ message: 'description is required' })
   description: string;
 
-  @IsDecimal()
+  @IsNumber()
   @IsNotEmpty({ message: 'trade_value is required' })
   trade_value: number;
 
