@@ -38,15 +38,6 @@ export class CreateItemDto {
   @IsNotEmpty({ message: 'user_id is required' })
   user_id: string;
 
-  @IsBoolean()
-  @IsOptional()
-  is_banner?: boolean;
-
-  @IsDate()
-  @Type(() => Date)
-  @IsOptional()
-  deleted_at?: Date;
-
   @IsString()
   @IsNotEmpty({ message: 'category_id is required' })
   category_id: string;
@@ -54,6 +45,10 @@ export class CreateItemDto {
   @IsArray()
   @IsOptional()
   image_urls?: string[];
+
+  @IsBoolean()
+  @IsOptional()
+  is_banner?: boolean;
 
   @IsDate()
   @Type(() => Date)
@@ -75,11 +70,16 @@ export class CreateItemDto {
   @IsOptional()
   updated_at?: Date;
 
-  @IsString()
+  @IsDate()
+  @Type(() => Date)
   @IsOptional()
-  id?: string;
+  deleted_at?: Date;
 
-  @IsString()
-  @IsOptional()
-  sub_category_id?: string;
+  // @IsString()
+  // @IsOptional()
+  // id?: string;
+
+  // @IsString()
+  // @IsOptional()
+  // sub_category_id?: string;
 }
