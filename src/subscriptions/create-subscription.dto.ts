@@ -1,4 +1,4 @@
-import { IsString, IsDecimal, IsEnum, IsOptional, IsDate } from 'class-validator';
+import { IsString, IsEnum, IsOptional, IsDate, IsNumber, isNotEmpty, IsNotEmpty } from 'class-validator';
 
 // Enums for Subscription Category and Status
 enum SubscriptionsCategories {
@@ -19,24 +19,25 @@ interface SubscriptionOption {
 
 export class CreateSubscriptionDTO {
   @IsString()
-  id: string; // Unique identifier for the subscription
-
-  @IsString()
+  @IsNotEmpty({ message: 'Title in Arabic is required' })
   title_ar: string; // Title of the subscription in Arabic
 
   @IsString()
+  @IsNotEmpty({ message: 'Title in English is required' })
   title_en: string; // Title of the subscription in English
 
   @IsString()
+  @IsNotEmpty({ message: 'Description in Arabic is required' })
   description_ar: string; // Description of the subscription in Arabic
 
   @IsString()
+  @IsNotEmpty({ message: 'Description in English is required' })
   description_en: string; // Description of the subscription in English
 
-  @IsDecimal()
+  @IsNumber()
   price: number; // Regular price of the subscription
 
-  @IsDecimal()
+  @IsNumber()
   offer_price: number; // Discounted or promotional price for the subscription
 
   @IsEnum(SubscriptionsCategories)
@@ -46,9 +47,10 @@ export class CreateSubscriptionDTO {
   status: SubscriptionsStatus; // Enum to indicate if the subscription is ACTIVE or INACTIVE
 
   @IsOptional()
-  subscription_options:SubscriptionOption[]; // Array of subscription options
+  subscription_options: SubscriptionOption[]; // Array of subscription options
 
   @IsDate()
+  @IsOptional()
   created_at?: Date; // Timestamp for when the subscription was created
 
   @IsDate()
@@ -59,4 +61,3 @@ export class CreateSubscriptionDTO {
   @IsOptional()
   deleted_at?: Date; // Optional timestamp for soft deletion
 }
-
