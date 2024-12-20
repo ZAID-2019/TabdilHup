@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsOptional, IsDate, IsNumber, isNotEmpty, IsNotEmpty } from 'class-validator';
+import { IsString, IsEnum, IsOptional, IsDate, IsNumber, IsNotEmpty } from 'class-validator';
 
 // Enums for Subscription Category and Status
 enum SubscriptionsCategories {
