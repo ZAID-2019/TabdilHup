@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsDate, IsDecimal, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum ItemCondition {
@@ -18,7 +18,7 @@ export class CreateItemDto {
   @IsNotEmpty({ message: 'description is required' })
   description: string;
 
-  @IsDecimal()
+  @IsNumber()
   @IsNotEmpty({ message: 'trade_value is required' })
   trade_value: number;
 
@@ -45,16 +45,6 @@ export class CreateItemDto {
   @IsDate()
   @Type(() => Date)
   @IsOptional()
-  created_at: Date;
-
-  @IsDate()
-  @Type(() => Date)
-  @IsOptional()
-  updated_at?: Date;
-
-  @IsDate()
-  @Type(() => Date)
-  @IsOptional()
   deleted_at?: Date;
 
   @IsString()
@@ -62,6 +52,7 @@ export class CreateItemDto {
   category_id: string;
 
   @IsArray()
+  @IsOptional()
   image_urls?: string[];
 
   @IsDate()
@@ -73,4 +64,22 @@ export class CreateItemDto {
   @Type(() => Date)
   @IsOptional()
   end_date?: Date;
+
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  created_at: Date;
+
+  @IsDate()
+  @Type(() => Date)
+  @IsOptional()
+  updated_at?: Date;
+
+  @IsString()
+  @IsOptional()
+  id?: string;
+
+  @IsString()
+  @IsOptional()
+  sub_category_id?: string;
 }
