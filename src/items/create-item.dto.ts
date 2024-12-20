@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsDate, IsDecimal, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsDecimal, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum ItemCondition {
@@ -11,24 +11,31 @@ export enum ItemCondition {
 }
 export class CreateItemDto {
   @IsString()
+  @IsNotEmpty({ message: 'title is required' })
   title: string;
 
   @IsString()
+  @IsNotEmpty({ message: 'description is required' })
   description: string;
 
   @IsDecimal()
-  trade_value: string; // Prisma Decimal values can be represented as strings
+  @IsNotEmpty({ message: 'trade_value is required' })
+  trade_value: number;
 
   @IsString()
-  condition: ItemCondition; // Adjust this if you are using an enum for ItemCondition
+  @IsNotEmpty({ message: 'condition is required' })
+  condition: ItemCondition;
 
   @IsString()
+  @IsNotEmpty({ message: 'city_id is required' })
   city_id: string;
 
   @IsString()
+  @IsNotEmpty({ message: 'country_id is required' })
   country_id: string;
 
   @IsString()
+  @IsNotEmpty({ message: 'user_id is required' })
   user_id: string;
 
   @IsBoolean()
@@ -37,6 +44,7 @@ export class CreateItemDto {
 
   @IsDate()
   @Type(() => Date)
+  @IsOptional()
   created_at: Date;
 
   @IsDate()
@@ -49,7 +57,8 @@ export class CreateItemDto {
   @IsOptional()
   deleted_at?: Date;
 
-  @IsInt()
+  @IsString()
+  @IsNotEmpty({ message: 'category_id is required' })
   category_id: string;
 
   @IsArray()

@@ -71,7 +71,7 @@ model Category {
   updated_at      DateTime?  @default(now()) @updatedAt
   deleted_at      DateTime?
   children        Category[] @relation("CategoryParent")
-  items           Item[] @relation("CategoryItems")
+  items           Item[]     @relation("CategoryItems")
 
   @@map("categories")
 }
@@ -98,10 +98,10 @@ model Item {
   item_images ItemImage[]
   banners     Banner[]
   category_id String
-  category    Category      @relation("CategoryItems" , fields: [category_id], references: [id])
-  country     Country       @relation(fields: [country_id], references: [id])
-  city        City          @relation(fields: [city_id], references: [id])
-  user        User          @relation(fields: [user_id], references: [id])
+  category    Category?     @relation("CategoryItems", fields: [category_id], references: [id])
+  country     Country?      @relation(fields: [country_id], references: [id])
+  city        City?         @relation(fields: [city_id], references: [id])
+  user        User?         @relation(fields: [user_id], references: [id])
   created_at  DateTime      @default(now())
   updated_at  DateTime?     @default(now()) @updatedAt
   deleted_at  DateTime?
@@ -201,8 +201,8 @@ model Country {
   updated_at DateTime? @default(now()) @updatedAt
   deleted_at DateTime?
   cities     City[]
-  User       User[]
-  Item       Item[]
+  users      User[]
+  items      Item[]
 
   @@map("countries")
 }
@@ -216,8 +216,9 @@ model City {
   created_at DateTime  @default(now())
   updated_at DateTime? @default(now()) @updatedAt
   deleted_at DateTime?
-  User       User[]
-  Item       Item[]
+
+  users User[]
+  items Item[]
 
   @@map("cities")
 }
