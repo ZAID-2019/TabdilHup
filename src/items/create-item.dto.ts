@@ -61,6 +61,11 @@ export class CreateItemDto {
   @IsNotEmpty({ message: 'category_id is required' })
   category_id: string;
 
+
+  @IsString()
+  @IsNotEmpty({ message: 'subcategory_id is required' })
+  subcategory_id: string;
+
   @IsArray()
   image_urls?: string[];
 

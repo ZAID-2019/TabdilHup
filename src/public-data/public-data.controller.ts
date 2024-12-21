@@ -8,8 +8,8 @@ export class PublicDataController {
   @Post('/search')
   async searchOnItems(
     @Body('query') query: string,
-    @Query('limit') limit: number = 10,
-    @Query('offset') offset: number = 0,
+    @Query('limit') limit: number,
+    @Query('offset') offset: number,
   ) {
     return this._publicDataService.searchOnItems(query, limit, offset);
   }

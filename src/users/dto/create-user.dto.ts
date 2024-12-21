@@ -45,6 +45,7 @@ export class CreateUserDto {
 
   @ApiProperty({ description: "User's phone number", required: false }) // Swagger property description
   @IsPhoneNumber(null) // Ensure it's a valid phone number (country-specific)
+  @IsOptional() // Optional field
   phone_number?: string; // User's phone number
 
   @ApiProperty({ description: 'URL to profile picture', required: false }) // Swagger property description
@@ -59,6 +60,7 @@ export class CreateUserDto {
 
   @ApiProperty({ description: "User's date of birth" }) // Swagger property description
   @IsDateString() // Ensure it's a valid date string
+  @IsOptional() // Optional field
   birth_date: Date; // User's date of birth
 
   @ApiProperty({ description: "User's address" }) // Swagger property description

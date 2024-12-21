@@ -57,21 +57,22 @@ model User {
 }
 
 model Category {
-  id              String     @id @default(uuid())
-  name_ar         String
-  name_en         String
-  description_en  String
-  description_ar  String
-  icon            String?
-  image_url       String?
-  image_public_id String?
-  parent_id       String?
-  parent          Category?  @relation("CategoryParent", fields: [parent_id], references: [id])
-  created_at      DateTime   @default(now())
-  updated_at      DateTime?  @default(now()) @updatedAt
-  deleted_at      DateTime?
-  children        Category[] @relation("CategoryParent")
-  items           Item[]     @relation("CategoryItems")
+  id                String     @id @default(uuid())
+  name_ar           String
+  name_en           String
+  description_en    String
+  description_ar    String
+  icon              String?
+  image_url         String?
+  image_public_id   String?
+  parent_id         String?
+  parent            Category?  @relation("CategoryParent", fields: [parent_id], references: [id])
+  created_at        DateTime   @default(now())
+  updated_at        DateTime?  @default(now()) @updatedAt
+  deleted_at        DateTime?
+  children          Category[] @relation("CategoryParent")
+  category_items    Item[]     @relation("CategoryItems")
+  subcategory_items Item[]     @relation("SubcategoryItems")
 
   @@map("categories")
 }
@@ -86,25 +87,27 @@ enum ItemCondition {
 }
 
 model Item {
-  id          String        @id @default(uuid())
-  title       String
-  description String
-  trade_value Decimal       @default(0) @db.Decimal(10, 2)
-  condition   ItemCondition
-  city_id     String
-  country_id  String
-  user_id     String
-  is_banner   Boolean       @default(false)
-  item_images ItemImage[]
-  banners     Banner[]
-  category_id String
-  category    Category?     @relation("CategoryItems", fields: [category_id], references: [id])
-  country     Country?      @relation(fields: [country_id], references: [id])
-  city        City?         @relation(fields: [city_id], references: [id])
-  user        User?         @relation(fields: [user_id], references: [id])
-  created_at  DateTime      @default(now())
-  updated_at  DateTime?     @default(now()) @updatedAt
-  deleted_at  DateTime?
+  id             String        @id @default(uuid())
+  title          String
+  description    String
+  trade_value    Decimal       @default(0) @db.Decimal(10, 2)
+  condition      ItemCondition
+  city_id        String
+  country_id     String
+  user_id        String
+  is_banner      Boolean       @default(false)
+  item_images    ItemImage[]
+  banners        Banner[]
+  category_id    String
+  subcategory_id String?
+  category       Category?     @relation("CategoryItems", fields: [category_id], references: [id])
+  subcategory    Category?     @relation("SubcategoryItems", fields: [subcategory_id], references: [id])
+  country        Country?      @relation(fields: [country_id], references: [id])
+  city           City?         @relation(fields: [city_id], references: [id])
+  user           User?         @relation(fields: [user_id], references: [id])
+  created_at     DateTime      @default(now())
+  updated_at     DateTime?     @default(now()) @updatedAt
+  deleted_at     DateTime?
 
   @@index([title])
   @@map("items")

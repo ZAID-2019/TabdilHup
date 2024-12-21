@@ -6,12 +6,13 @@ export class PublicDataService {
   constructor(private readonly _prismaService: PrismaService) {}
   private readonly logger = new Logger(PublicDataService.name);
 
-  async searchOnItems(query: string, limit: number, offset: number): Promise<unknown> {
+  async searchOnItems(query: string, limit: number = 10, offset: number = 0): Promise<unknown> {
     try {
+      // Ensure limit and offset are valid numbers
+      const take = Number(limit) || 10; // Default to 10 if limit is invalid
+      const skip = Number(offset) || 0; // Default to 0 if offset is invalid
       const [itemsPromise, totalPromise] = await Promise.all([
         this._prismaService.item.findMany({
-          take: limit,
-          skip: offset,
           select: {
             id: true,
             title: true,
@@ -19,6 +20,8 @@ export class PublicDataService {
           where: {
             OR: [{ title: { contains: query } }, { description: { contains: query } }],
           },
+          skip: skip,
+          take: take,
         }),
         this._prismaService.item.count({
           where: {
@@ -26,6 +29,7 @@ export class PublicDataService {
           },
         }),
       ]);
+      console.log({ itemsPromise, totalPromise });
 
       // Await both promises
       const startTime = Date.now();
@@ -131,68 +135,49 @@ export class PublicDataService {
       );
     }
   }
+
   async getPopularItems(): Promise<unknown> {
     try {
-      const popularItemsCollection = await this._prismaService.category.findMany({
-        where: { parent_id: null },
+      // Step 1: Fetch 5 categories
+      const categories = await this._prismaService.category.findMany({
+        take: 5, // Limit to 5 categories
         select: {
           id: true,
           name_ar: true,
           name_en: true,
-          children: {
-            where: { deleted_at: null },
+        },
+        where: { parent_id: null, deleted_at: null },
+      });
+  
+      // Step 2: Fetch last 5 items for each category
+      const popularItems = await Promise.all(
+        categories.map(async (category) => {
+          const items = await this._prismaService.item.findMany({
+            take: 5, // Limit to the last 5 items
+            orderBy: { created_at: 'desc' }, // Order by most recent
+            where: { category_id: category.id }, // Match category
             select: {
               id: true,
-              name_ar: true,
-              name_en: true,
-              items: {
+              title: true,
+              description: true,
+              item_images: {
                 select: {
-                  id: true,
-                  title: true,
-                  description: true,
-                  item_images: {
-                    select: {
-                      image_url: true,
-                    },
-                  },
+                  image_url: true,
                 },
               },
-            },
-          },
-        },
-      });
-
-      const popularItems = popularItemsCollection.map((category) => {
-        // Extract main category details
-        const mainCategory = {
-          id: category.id,
-          name_ar: category.name_ar,
-          name_en: category.name_en,
-          items: [],
-        };
-
-        // Aggregate items from all children categories with items
-        if (category.children && category.children.length > 0) {
-          category.children.forEach((child) => {
-            if (child.items && child.items.length > 0) {
-              mainCategory.items.push(...child.items);
             }
           });
-        }
-
-        // Randomize and limit the items to 2
-        mainCategory.items = mainCategory.items.sort(() => 0.5 - Math.random()).slice(0, 2);
-
-        return mainCategory;
-      });
-
+          return {
+            ...category,
+            items,
+          };
+        }),
+      );
+      this.logger.verbose(`Popular Items Successfully Retrieved`);
       return { popularItems, status: 'success', message: 'Popular Items Successfully Retrieved' };
     } catch (error) {
-      this.logger.error(`Error during get popular items: ${error.message}`, error.stack);
-      throw new HttpException(
-        { status: 'error', message: 'An error occurred while getting popular items', details: error.message },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      console.error(`Error retrieving popular items: ${error.message}`);
+      throw new Error('Failed to retrieve popular items');
     }
   }
 
