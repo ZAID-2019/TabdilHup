@@ -30,7 +30,7 @@ async function bootstrap() {
 
   // Define CORS options
   const corsOptions: CorsOptions = {
-    origin: ['https://exchange100-admin.web.app', 'https://exchange100-d205e.web.app','http://localhost:3001'], // Allow your frontend origin
+    origin: ['https://exchange100-admin.web.app', 'https://exchange100-d205e.web.app','http://localhost:3001','http://localhost:3000'], // Allow your frontend origin
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allowed methods
     credentials: true, // Allow cookies to be sent with requests
     optionsSuccessStatus: 204, // Success status for OPTIONS requests (preflight)
