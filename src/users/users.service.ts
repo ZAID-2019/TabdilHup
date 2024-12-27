@@ -14,7 +14,7 @@ export class UsersService {
   // Get all users with pagination
   async findAll(limit?: number, offset?: number): Promise<unknown> {
     try {
-      limit = Number(limit) || 2000; // Default limit to 10 if not provided
+      limit = Number(limit) || 10; // Default limit to 10 if not provided
       offset = Number(offset) || 0; // Default offset to 0 if not provided
       const [users, total] = await Promise.all([
         this._prismaService.user.findMany({
@@ -36,7 +36,7 @@ export class UsersService {
             role: true,
             status: true,
             address: true,
-            user_subscriptions: true
+            user_subscriptions: true,
           },
           orderBy: {
             created_at: 'desc', // Change 'created_at' to your desired field
@@ -48,7 +48,7 @@ export class UsersService {
       ]);
 
       this.logger.verbose(`Successfully retrieved ${users.length} users`);
-      return ResponseUtil.success('Find All Users', { users, total });
+      return { users, total, status: 'success', message: 'Find All Users' };
     } catch (error) {
       this.logger.error(`Error In Find All Users: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while searching for users', 'SEARCH_FAILED', error?.message);
@@ -59,7 +59,7 @@ export class UsersService {
   async findOne(id: string): Promise<unknown> {
     try {
       const user = await this._prismaService.user.findUnique({
-        where: { id: id, status: UserStatus.ACTIVE , deleted_at: null },
+        where: { id: id, status: UserStatus.ACTIVE, deleted_at: null },
         select: {
           id: true,
           last_name: true,
@@ -75,7 +75,7 @@ export class UsersService {
           role: true,
           status: true,
           address: true,
-          user_subscriptions: true
+          user_subscriptions: true,
         },
       });
       this.logger.verbose(`Successfully Retrieved User with ID: ${id}`);
@@ -108,8 +108,34 @@ export class UsersService {
         },
       }); // Create a new user with provided data
       this.logger.verbose('User created successfully');
-      return {createUser, status: 'success', message: 'User created successfully'};
+      return { createUser, status: 'success', message: 'User created successfully' };
     } catch (error) {
+      if (error.code === 'P2002') {
+        // Prisma unique constraint error code
+        const targetField = (error.meta as any)?.target; // Prisma provides this in the error meta
+        if (targetField.includes('username')) {
+          return {
+            statusCode: 400,
+            status: 'error',
+            message: 'Username already exists.',
+            error: {
+              code: 'CREATE_FAILED',
+              details: 'The username provided is already in use.',
+            },
+          };
+        }
+        if (targetField.includes('email')) {
+          return {
+            statusCode: 400,
+            status: 'error',
+            message: 'Email already exists.',
+            error: {
+              code: 'CREATE_FAILED',
+              details: 'The email provided is already in use.',
+            },
+          };
+        }
+      }
       return ResponseUtil.error(error.message, 'CREATE_FAILED', error?.message);
     }
   }
@@ -127,48 +153,89 @@ export class UsersService {
 
   async update(id: string, data: UpdateUserDto): Promise<unknown> {
     try {
-
       const user = await this._prismaService.user.findUnique({ where: { id: id } }); // Check if the user exists
       if (!user) throw new NotFoundException(`User not found`); // Throw error if user doesn't exist
-  
+
       const updateData: any = { ...data }; // Start with the provided data
-  
+
       //? Hash the password if it's provided
       if (data.password) {
         updateData.password = await hash(data.password, 10); // Hash the new password
       }
-  
+
       //? Format the birth_date if it's provided
       if (data.birth_date) {
         const [year, month, day] = data.birth_date.toString().split('-');
         updateData.birth_date = new Date(`${year}-${month}-${day}`);
       }
-  
+
       //? Update the user using Prisma
       const updatedUser = await this._prismaService.user.update({
         where: { id }, // Update user by ID
         data: updateData,
       });
-  
+
       this.logger.verbose('User updated successfully');
       return { updatedUser, status: 'success', message: 'User updated successfully' };
     } catch (error) {
+      if (error.code === 'P2002') {
+        // Prisma unique constraint error code
+        const targetField = (error.meta as any)?.target; // Prisma provides this in the error meta
+        if (targetField.includes('username')) {
+          return {
+            statusCode: 400,
+            status: 'error',
+            message: 'Username already exists.',
+            error: {
+              code: 'CREATE_FAILED',
+              details: 'The username provided is already in use.',
+            },
+          };
+        }
+        if (targetField.includes('email')) {
+          return {
+            statusCode: 400,
+            status: 'error',
+            message: 'Email already exists.',
+            error: {
+              code: 'CREATE_FAILED',
+              details: 'The email provided is already in use.',
+            },
+          };
+        }
+      }
       this.logger.error(`Error updating user: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while updating the user', 'UPDATE_FAILED', error?.message);
     }
   }
-  
 
   // Soft delete a user by ID
   async remove(id: string): Promise<unknown> {
-    const user = await this._prismaService.user.findUnique({ where: { id: id } }); // Check if the user exists
-    if (!user) throw new NotFoundException(`User not found`); // Throw error if user doesn't exist
+    try {
+      // Check if the user exists
+      const user = await this._prismaService.user.findUnique({
+        where: { id },
+      });
 
-    // Soft delete by setting the deletedAt field to the current date
-    return this._prismaService.user.update({
-      where: { id: id }, // Specify the user to update
-      data: { deleted_at: new Date() }, // Set the deletedAt field to mark as deleted
-    });
+      if (!user) {
+        return ResponseUtil.error('User not found', 'NOT_FOUND', 'User not found', 404);
+      }
+
+      // Perform soft delete by updating the `deleted_at` field
+      await this._prismaService.user.update({
+        where: { id },
+        data: { deleted_at: new Date().toISOString() }, // Ensure UTC consistency
+      });
+
+      // Optionally log the soft delete operation for tracking
+      this.logger.verbose(`User with ID ${id} soft deleted at ${new Date().toISOString()}`);
+      return ResponseUtil.success('User deleted successfully', null, 204);
+    } catch (error) {
+      // Log the error for debugging
+      this.logger.error(`Failed to soft delete user with ID ${id}:`, error);
+      // Re-throw the error to ensure proper error handling by the caller
+      return ResponseUtil.error('An error occurred while deleting the user', 'DELETE_FAILED', error?.message);
+    }
   }
 
   // Search for users

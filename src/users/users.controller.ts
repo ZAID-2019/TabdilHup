@@ -9,7 +9,7 @@ export class UsersController {
 
   // Get a list of users with pagination
   @Get()
-  async findAll(@Query('limit') limit: number = 5000, @Query('offset') offset: number = 0) {
+  async findAll(@Query('limit') limit: number, @Query('offset') offset: number) {
     return this._usersService.findAll(limit, offset);
   }
 
