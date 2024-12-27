@@ -12,22 +12,6 @@ export class AuthService {
   // Create a new user
   async register(data: RegisterDto): Promise<unknown> {
     try {
-      const existingUser = await this._prismaService.user.findFirst({
-        where: {
-          OR: [{ email: data.email }, { username: data.username }],
-        },
-      });
-
-      if (existingUser) {
-        if (existingUser.email === data.email) {
-          return ResponseUtil.error('User already registered', 'USER_EXISTS', 'Email already exists');
-        }
-
-        if (existingUser.username === data.username) {
-          return ResponseUtil.error('Username already registered', 'USER_EXISTS', 'Username already exists');
-        }
-      }
-
       //? Hash the password (10 is the salt rounds)
       const hashedPassword = await hash(data.password, 10);
 
@@ -37,16 +21,54 @@ export class AuthService {
       const birthDate = new Date(`${year}-${month}-${day}`);
 
       //? Create the user using Prisma
-      const createUser = await this._prismaService.user.create({
+      await this._prismaService.user.create({
         data: {
-          ...data, // Spread the DTO properties
-          password: hashedPassword, // Use the hashed password
+          first_name: data.first_name,
+          last_name: data.last_name,
+          username: data.username,
+          email: data.email,
+          gender: data.gender,
+          role: data.role,
+          status: data.status,
+          phone_number: data.phone_number,
+          profile_picture: data.profile_picture,
+          personal_identity_picture: data.personal_identity_picture,
+          address: data.address,
+          city_id: data.city_id,
+          country_id: data.country_id,
           birth_date: birthDate,
+          password: hashedPassword, // Use the hashed password
         },
       }); // Create a new user with provided data
       this.logger.verbose('User created successfully');
-      return ResponseUtil.success('User created successfully', createUser);
+      return ResponseUtil.success('User created successfully');
     } catch (error) {
+      if (error.code === 'P2002') {
+        // Prisma unique constraint error code
+        const targetField = (error.meta as any)?.target; // Prisma provides this in the error meta
+        if (targetField.includes('username')) {
+          return {
+            statusCode: 400,
+            status: 'error',
+            message: 'Username already exists.',
+            error: {
+              code: 'CREATE_FAILED',
+              details: 'The username provided is already in use.',
+            },
+          };
+        }
+        if (targetField.includes('email')) {
+          return {
+            statusCode: 400,
+            status: 'error',
+            message: 'Email already exists.',
+            error: {
+              code: 'CREATE_FAILED',
+              details: 'The email provided is already in use.',
+            },
+          };
+        }
+      }
       return ResponseUtil.error(error.message, 'CREATE_FAILED', error?.message);
     }
   }
