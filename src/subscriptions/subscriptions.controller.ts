@@ -1,12 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SubscriptionsService } from './subscriptions.service';
 import { CreateSubscriptionDTO } from './create-subscription.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('api/subscriptions')
 export class SubscriptionsController {
   constructor(private readonly _subscriptionsService: SubscriptionsService) {}
-
   @Get()
   @ApiOperation({ summary: 'Get all subscriptions' })
   @ApiResponse({ status: 200, description: 'List of Subscriptions.' })
