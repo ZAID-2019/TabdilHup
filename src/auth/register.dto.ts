@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsOptional, IsPhoneNumber, IsString, IsNotEmpty, IsDate } from 'class-validator';
+import { IsEmail, IsEnum, IsOptional, IsString, IsNotEmpty, IsDateString } from 'class-validator';
 import { Gender, UserRoles, UserStatus } from '@prisma/client';
 
 export class RegisterDto {
@@ -34,7 +34,6 @@ export class RegisterDto {
   @IsNotEmpty()
   status: UserStatus = UserStatus.ACTIVE;
 
-  @IsPhoneNumber()
   @IsNotEmpty()
   phone_number: string;
 
@@ -46,7 +45,7 @@ export class RegisterDto {
   @IsOptional()
   personal_identity_picture?: string;
 
-  @IsDate()
+  @IsDateString()
   @IsNotEmpty()
   birth_date: Date;
 

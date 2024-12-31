@@ -1,12 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateCategoryDto } from './create-category.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('api/categories')
 export class CategoriesController {
   constructor(private readonly _categoriesService: CategoriesService) {}
-
   @Get()
   @ApiOperation({ summary: 'Get all categories' })
   @ApiResponse({ status: 200, description: 'List of categories.' })

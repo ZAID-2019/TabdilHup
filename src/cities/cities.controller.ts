@@ -1,12 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CreateCityDto } from './create-city.dto';
 import { CitiesService } from './cities.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('api/cities')
 export class CitiesController {
   constructor(private readonly _citiesService: CitiesService) {}
-
   @Get()
   @ApiOperation({ summary: 'Get all cities' })
   @ApiResponse({ status: 200, description: 'List of cities.' })

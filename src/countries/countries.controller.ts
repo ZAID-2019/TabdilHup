@@ -1,12 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CountriesService } from './countries.service';
 import { CreateCountryDto } from './create-country.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('api/countries')
 export class CountriesController {
   constructor(private readonly _countriesService: CountriesService) {}
-
   @Get()
   @ApiOperation({ summary: 'Get all countries' })
   @ApiResponse({ status: 200, description: 'List of countries.' })
