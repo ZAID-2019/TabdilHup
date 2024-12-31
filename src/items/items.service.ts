@@ -341,6 +341,7 @@ export class ItemsService {
           user_id: data.user_id,
           is_banner: data.is_banner,
           category_id: data.category_id,
+          subcategory_id: data.subcategory_id,
         },
       });
 
