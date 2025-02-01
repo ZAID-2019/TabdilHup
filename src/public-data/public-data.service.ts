@@ -225,4 +225,67 @@ export class PublicDataService {
       );
     }
   }
+
+
+
+
+   async getItemById(id: string): Promise<unknown> {
+      try {
+        const result = await this._prismaService.item.findUnique({
+          where: { id: id },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            trade_value: true,
+            condition: true,
+            is_banner: true,
+            category_id: true,
+            subcategory_id: true,
+            country_id: true,
+            city_id: true,
+            city: { select: { id: true, name_ar: true, name_en: true } },
+            country: { select: { id: true, name_ar: true, name_en: true } },
+            banners: { select: { id: true, start_date: true, end_date: true, is_active: true } },
+            category: {
+              select: {
+                id: true,
+                name_ar: true,
+                name_en: true,
+              },
+            },
+            subcategory: {
+              select: {
+                id: true,
+                name_ar: true,
+                name_en: true,
+              },
+            },
+            item_images: {
+              select: {
+                id: true,
+                image_url: true,
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                first_name: true,
+                last_name: true,
+              },
+            },
+          },
+        });
+        this.logger.verbose(`Successfully Retrieved One Item`);
+        const item = { ...result, trade_value: +result.trade_value };
+        return { item, status: 'success', message: 'Find An Items' };
+      } catch (error) {
+        this.logger.error(`Error In Find Item By ID: ${error.message}`, error.stack);
+        throw new HttpException(
+          { status: 'error', message: 'An error occurred while getting items by Id', details: error.message },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+        // return ResponseUtil.error('An error occurred while searching for item', 'FIND_ONE_FAILED', error?.message);
+      }
+    }
 }

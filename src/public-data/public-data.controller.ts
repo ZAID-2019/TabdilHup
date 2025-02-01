@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { PublicDataService } from './public-data.service';
 
 @Controller('public-data')
@@ -32,5 +32,10 @@ export class PublicDataController {
   @Get('/popular-items')
   async getPopularItems() {
     return this._publicDataService.getPopularItems();
+  }
+
+  @Get('/item/:id')
+  async getItemById(@Param('id') id : string) {
+    return this._publicDataService.getItemById(id);
   }
 }
