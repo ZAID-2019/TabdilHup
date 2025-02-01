@@ -148,7 +148,7 @@ export class PublicDataService {
         },
         where: { parent_id: null, deleted_at: null },
       });
-  
+
       // Step 2: Fetch last 5 items for each category
       const popularItems = await Promise.all(
         categories.map(async (category) => {
@@ -165,7 +165,7 @@ export class PublicDataService {
                   image_url: true,
                 },
               },
-            }
+            },
           });
           return {
             ...category,
@@ -224,5 +224,194 @@ export class PublicDataService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async createData() {
+    // ✅ Create Root Category
+    const rootCategory = await this._prismaService.tempCategory.create({
+      data: {
+        name: 'Electronics',
+        isParent: true,
+        parentCategoryId: null, // Root category has no parent
+      },
+    });
+    console.log(`📌 Root category created: ${rootCategory.name}`);
+
+    // ✅ Create Subcategories
+    const laptopCategory = await this._prismaService.tempCategory.create({
+      data: { name: 'Laptops', isParent: false, parentCategoryId: rootCategory.id },
+    });
+
+    const smartphoneCategory = await this._prismaService.tempCategory.create({
+      data: { name: 'Smartphones', isParent: false, parentCategoryId: rootCategory.id },
+    });
+
+    const gamingCategory = await this._prismaService.tempCategory.create({
+      data: { name: 'Gaming Consoles', isParent: false, parentCategoryId: rootCategory.id },
+    });
+
+    const accessoriesCategory = await this._prismaService.tempCategory.create({
+      data: { name: 'Accessories', isParent: false, parentCategoryId: rootCategory.id },
+    });
+
+    console.log('📌 Subcategories created!');
+
+    // ✅ Insert Items Under Subcategories
+    await this._prismaService.tempItem.create({
+      data: { name: 'MacBook Pro', subCategoryId: laptopCategory.id },
+    });
+
+    await this._prismaService.tempItem.create({
+      data: { name: 'iPhone 14', subCategoryId: smartphoneCategory.id },
+    });
+
+    await this._prismaService.tempItem.create({
+      data: { name: 'PlayStation 5', subCategoryId: gamingCategory.id },
+    });
+
+    await this._prismaService.tempItem.create({
+      data: { name: 'Wireless Mouse', subCategoryId: accessoriesCategory.id },
+    });
+
+    console.log('🎉 Items inserted successfully!');
+  }
+
+  async getCategoryAggregateData(tempId: string) {
+    // ✅ Ensure the category exists before running the query
+    console.log({ tempId });
+
+    const categoryExists = await this._prismaService.tempCategory.findUnique({
+      where: { id: tempId },
+    });
+
+    console.log(categoryExists);
+
+    if (!categoryExists) {
+      throw new Error('❌ Category not found!');
+    }
+
+    // ✅ Step 2: Fetch the full category hierarchy using Recursive SQL
+    const categoryHierarchy = await this._prismaService.$queryRaw`
+    WITH RECURSIVE category_hierarchy AS (
+        -- Start with the category of the item
+        SELECT "id", "name", "parentCategoryId", "isParent"
+        FROM "TempCategory"
+        WHERE id = ${tempId}
+
+        UNION ALL
+
+        -- Recursively fetch all parent categories up to the root
+        SELECT c."id", c."name", c."parentCategoryId", c."isParent"
+        FROM "TempCategory" c
+        INNER JOIN category_hierarchy ch ON c."id" = ch."parentCategoryId"
+        WHERE ch."isParent" = false
+    )
+    SELECT * FROM category_hierarchy;
+  `;
+
+    return categoryHierarchy;
+  }
+
+  async insertCarHierarchy() {
+    // await this._prismaService.tempItem.create({
+    //   data: { name: '2025 Toyota Prius', subCategoryId: "3a7bc3b0-c374-44e8-bc45-51af4e6ab691" },
+    // });
+
+    // await this._prismaService.tempItem.create({
+    //   data: { name: '2025 Hyundai Elantra', subCategoryId: "c6c7aea5-253c-4ae2-a22b-24331ab1710c" },
+    // });
+
+    // await this._prismaService.tempItem.create({
+    //   data: { name: '2025 Honda CR-V', subCategoryId: "b150520a-2f71-42e6-8875-8259ac95ca33" },
+    // });
+    // return
+    console.log('🚀 Seeding Car Hierarchy...');
+
+    // ✅ Insert Main Category (Cars)
+    const carsCategory = await this._prismaService.tempCategory.create({
+      data: {
+        name: 'Cars',
+        isParent: true,
+        parentCategoryId: null, // Root category
+      },
+    });
+
+    console.log(`📌 Main Category Created: ${carsCategory.name}`);
+
+    // ✅ Insert First Level Subcategories (Sedans, SUVs)
+    const sedansCategory = await this._prismaService.tempCategory.create({
+      data: { name: 'Sedans', isParent: false, parentCategoryId: carsCategory.id },
+    });
+
+    const suvsCategory = await this._prismaService.tempCategory.create({
+      data: { name: 'SUVs', isParent: false, parentCategoryId: carsCategory.id },
+    });
+
+    console.log('📌 Subcategories Created: Sedans, SUVs');
+
+    // ✅ Insert Second Level Subcategories
+    await this._prismaService.tempCategory.createMany({
+      data: [
+        { name: 'Electric Sedans', isParent: false, parentCategoryId: sedansCategory.id },
+        { name: 'Gasoline Sedans', isParent: false, parentCategoryId: sedansCategory.id },
+        { name: 'Compact SUVs', isParent: false, parentCategoryId: suvsCategory.id },
+      ],
+    });
+
+    console.log('🎉 Sub-Subcategories Created: Electric Sedans, Gasoline Sedans, Compact SUVs');
+  }
+
+  async getAllCategoriesWithSubcategories() {
+    // Fetch all categories from the database
+    const categories = await this._prismaService.tempCategory.findMany({
+      select: {
+        id: true,
+        name: true,
+        parentCategoryId: true,
+        isParent: true,
+      },
+    });
+
+    // Convert categories into a map
+    const categoryMap = new Map<string, any>();
+    categories.forEach((category) => {
+      categoryMap.set(category.id, { ...category, subcategories: [] });
+    });
+
+    // Build the hierarchy using a loop
+    const rootCategories = [];
+    categories.forEach((category) => {
+      if (category.parentCategoryId) {
+        const parent = categoryMap.get(category.parentCategoryId);
+        if (parent) {
+          parent.subcategories.push(categoryMap.get(category.id));
+        }
+      } else {
+        rootCategories.push(categoryMap.get(category.id));
+      }
+    });
+
+    return rootCategories;
+  }
+
+  async getAllCategoriesWithSubcategories2() {
+    const categories = await this._prismaService.$queryRaw`
+  WITH RECURSIVE category_tree AS (
+      -- Start with all root categories
+      SELECT "id", "name", "parentCategoryId", "isParent"
+      FROM "TempCategory"
+      WHERE "parentCategoryId" IS NULL
+
+      UNION ALL
+
+      -- Recursively fetch all child categories
+      SELECT c."id", c."name", c."parentCategoryId", c."isParent"
+      FROM "TempCategory" c
+      INNER JOIN category_tree ct ON c."parentCategoryId" = ct."id"
+  )
+  SELECT * FROM category_tree;
+`;
+
+    return categories;
   }
 }

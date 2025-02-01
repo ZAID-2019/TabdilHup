@@ -225,3 +225,25 @@ model City {
 
   @@map("cities")
 }
+
+
+model TempCategory {
+  id               String    @id @default(uuid())
+  name             String
+  parentCategoryId String?   // Direct parent category
+  isParent         Boolean   @default(false) // True if this is a main category (root)
+
+  parent           TempCategory? @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id])
+  children         TempCategory[] @relation("CategoryHierarchy")
+
+  items           TempItem[]  @relation("CategoryToItems") // Corrected relation to TempItem
+
+  @@index([parentCategoryId]) // Optimize queries for parent-child relationships
+}
+
+model TempItem {
+  id              String  @id @default(uuid())
+  name            String
+  subCategoryId   String
+  subCategory     TempCategory @relation("CategoryToItems", fields: [subCategoryId], references: [id])
+}
