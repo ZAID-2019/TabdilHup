@@ -151,7 +151,7 @@ export class UsersService {
     });
   }
 
-  async update(id: string, data: UpdateUserDto): Promise<unknown> {
+  async updateOld1(id: string, data: UpdateUserDto): Promise<unknown> {
     try {
       const user = await this._prismaService.user.findUnique({ where: { id: id } }); // Check if the user exists
       if (!user) throw new NotFoundException(`User not found`); // Throw error if user doesn't exist
@@ -159,7 +159,7 @@ export class UsersService {
       const updateData: any = { ...data }; // Start with the provided data
 
       //? Hash the password if it's provided
-      if (data.password) {
+      if (data.password && data.password !== '') {
         updateData.password = await hash(data.password, 10); // Hash the new password
       }
 
@@ -206,6 +206,184 @@ export class UsersService {
       }
       this.logger.error(`Error updating user: ${error.message}`, error.stack);
       return ResponseUtil.error('An error occurred while updating the user', 'UPDATE_FAILED', error?.message);
+    }
+  }
+
+  async updateNew1(id: string, data: UpdateUserDto): Promise<unknown> {
+    try {
+      // Fetch the existing user
+      const user = await this._prismaService.user.findUnique({ where: { id } });
+      if (!user) throw new NotFoundException('User not found');
+
+      // Prepare the update data object
+      const updateData: any = {};
+
+      // Trim string inputs to avoid hidden spaces
+      if (data.username) updateData.username = data.username.trim();
+      if (data.email) updateData.email = data.email.trim();
+
+      // Hash the password only if it's explicitly provided and not empty
+      if (data.password && data.password.trim() !== '') {
+        updateData.password = await hash(data.password, 10);
+      }
+
+      // Validate and format birth_date if provided
+      if (data.birth_date) {
+        const [year, month, day] = data.birth_date.toString().split('-');
+        updateData.birth_date = new Date(`${year}-${month}-${day}`);
+      }
+      // Update user in the database
+      const updatedUser = await this._prismaService.user.update({
+        where: { id },
+        data: updateData,
+      });
+
+      this.logger.verbose('User updated successfully');
+      return {
+        updatedUser,
+        status: 'success',
+        message: 'User updated successfully',
+      };
+    } catch (error) {
+      console.error('Update User Error:', error);
+
+      // Handle Prisma unique constraint errors
+      if (error.code === 'P2002' && error.meta?.target) {
+        const targetField = error.meta.target as string[];
+
+        if (targetField.includes('username')) {
+          return {
+            statusCode: 400,
+            status: 'error',
+            message: 'Username already exists.',
+            error: {
+              code: 'UPDATE_FAILED',
+              details: 'The username provided is already in use.',
+            },
+          };
+        }
+
+        if (targetField.includes('email')) {
+          return {
+            statusCode: 400,
+            status: 'error',
+            message: 'Email already exists.',
+            error: {
+              code: 'UPDATE_FAILED',
+              details: 'The email provided is already in use.',
+            },
+          };
+        }
+      }
+
+      this.logger.error(`Error updating user: ${error.message}`, error.stack);
+      return {
+        statusCode: 400,
+        status: 'error',
+        message: 'An error occurred while updating the user',
+        error: {
+          code: 'UPDATE_FAILED',
+          details: error.message || 'Unknown error',
+        },
+      };
+    }
+  }
+
+  async update(id: string, data: UpdateUserDto): Promise<unknown> {
+    try {
+
+          // Remove any non-breaking spaces or invisible characters from input
+    const cleanedData = JSON.parse(JSON.stringify(data).replace(/\u00A0/g, ''));
+      // Fetch the existing user
+      const user = await this._prismaService.user.findUnique({ where: { id } });
+      if (!user) throw new NotFoundException('User not found');
+
+      // Prepare the update data object
+      const updateData: any = {};
+
+      // List of allowed fields for update
+      const allowedFields = [
+        'first_name',
+        'last_name',
+        'username',
+        'email',
+        'gender',
+        'role',
+        'birth_date',
+        'password',
+      ];
+
+      // Iterate over data fields and assign only allowed values
+      Object.keys(cleanedData).forEach((key) => {
+        if (allowedFields.includes(key) && data[key] !== undefined && data[key] !== null && data[key] !== "") {
+          updateData[key] = typeof data[key] === 'string' ? data[key].trim() : data[key];
+        }
+      });
+
+      // Hash the password only if it's explicitly provided and not empty
+      if (data.password && data.password.trim() !== '') {
+        updateData.password = await hash(data.password, 10);
+      }
+
+      // Validate and format birth_date if provided
+      if (data.birth_date) {
+        const [year, month, day] = data.birth_date.toString().split('-');
+        updateData.birth_date = new Date(`${year}-${month}-${day}`);
+      }
+      // Update user in the database
+      const updatedUser = await this._prismaService.user.update({
+        where: { id },
+        data: updateData,
+      });
+
+      this.logger.verbose('User updated successfully');
+      return {
+        updatedUser,
+        status: 'success',
+        message: 'User updated successfully',
+      };
+    } catch (error) {
+      console.error('Update User Error:', error);
+
+      // Handle Prisma unique constraint errors
+      if (error.code === 'P2002' && error.meta?.target) {
+        const targetField = error.meta.target as string[];
+
+        if (targetField.includes('username')) {
+          return {
+            statusCode: 400,
+            status: 'error',
+            message: 'Username already exists.',
+            error: {
+              code: 'UPDATE_FAILED',
+              details: 'The username provided is already in use.',
+            },
+          };
+        }
+
+        if (targetField.includes('email')) {
+          return {
+            statusCode: 400,
+            status: 'error',
+            message: 'Email already exists.',
+            error: {
+              code: 'UPDATE_FAILED',
+              details: 'The email provided is already in use.',
+            },
+          };
+        }
+      }
+
+      this.logger.error(`Error updating user: ${error.message}`, error.stack);
+      return {
+        statusCode: 400,
+        status: 'error',
+        message: 'An error occurred while updating the user',
+        error: {
+          code: 'UPDATE_FAILED',
+          details: error.message || 'Unknown error',
+        },
+      };
     }
   }
 
