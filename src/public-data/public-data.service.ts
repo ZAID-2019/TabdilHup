@@ -1,4 +1,11 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -29,7 +36,6 @@ export class PublicDataService {
           },
         }),
       ]);
-      console.log({ itemsPromise, totalPromise });
 
       // Await both promises
       const startTime = Date.now();
@@ -148,7 +154,7 @@ export class PublicDataService {
         },
         where: { parent_id: null, deleted_at: null },
       });
-  
+
       // Step 2: Fetch last 5 items for each category
       const popularItems = await Promise.all(
         categories.map(async (category) => {
@@ -165,7 +171,7 @@ export class PublicDataService {
                   image_url: true,
                 },
               },
-            }
+            },
           });
           return {
             ...category,
@@ -181,27 +187,30 @@ export class PublicDataService {
     }
   }
 
-  async getItemsByFilter(categoryId: string, limit: number, offset: number): Promise<unknown> {
+  async getItemsByFilter(
+    category_id: string | null,
+    subcategory_id: string | null,
+    limit: number,
+    offset: number,
+  ): Promise<unknown> {
     try {
-      const category = await this._prismaService.category.findUnique({
-        where: { id: categoryId },
-        select: {
-          id: true,
-          name_ar: true,
-          name_en: true,
-          children: {
-            select: {
-              id: true,
-              name_ar: true,
-              name_en: true,
-            },
-          },
-        },
-      });
-      console.log({ category });
+      limit = Number(limit) || 10;
+      offset = Number(offset) || 0;
 
+      // Build dynamic filter conditions
+      const filterConditions: any = { deleted_at: null };
+
+      if (category_id && category_id != "null") {
+        filterConditions.category_id = category_id;
+      }
+
+      if (subcategory_id && subcategory_id != "null") { 
+        filterConditions.subcategory_id = subcategory_id;
+      }
+      console.log({ filterConditions });
+      
       const items = await this._prismaService.item.findMany({
-        where: { category_id: categoryId, deleted_at: null },
+        where: filterConditions,
         select: {
           id: true,
           title: true,
@@ -226,35 +235,128 @@ export class PublicDataService {
     }
   }
 
+  async getItemById(id: string): Promise<unknown> {
+    try {
+      const result = await this._prismaService.item.findUnique({
+        where: { id: id },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          trade_value: true,
+          condition: true,
+          is_banner: true,
+          category_id: true,
+          subcategory_id: true,
+          country_id: true,
+          city_id: true,
+          city: { select: { id: true, name_ar: true, name_en: true } },
+          country: { select: { id: true, name_ar: true, name_en: true } },
+          banners: { select: { id: true, start_date: true, end_date: true, is_active: true } },
+          category: {
+            select: {
+              id: true,
+              name_ar: true,
+              name_en: true,
+            },
+          },
+          subcategory: {
+            select: {
+              id: true,
+              name_ar: true,
+              name_en: true,
+            },
+          },
+          item_images: {
+            select: {
+              id: true,
+              image_url: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              first_name: true,
+              last_name: true,
+            },
+          },
+        },
+      });
+      this.logger.verbose(`Successfully Retrieved One Item`);
+      const item = { ...result, trade_value: +result.trade_value };
+      return { item, status: 'success', message: 'Find An Items' };
+    } catch (error) {
+      this.logger.error(`Error In Find Item By ID: ${error.message}`, error.stack);
+      throw new HttpException(
+        { status: 'error', message: 'An error occurred while getting items by Id', details: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+      // return ResponseUtil.error('An error occurred while searching for item', 'FIND_ONE_FAILED', error?.message);
+    }
+  }
 
+  async getUserProfileDataById(id: string): Promise<unknown> {
+    try {
+      const user = await this._prismaService.user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          first_name: true,
+          last_name: true,
+          username: true,
+          email: true,
+          gender: true,
+          role: true,
+          status: true,
+          profile_picture: true,
+          birth_date: true,
+          created_at: true,
+          updated_at: true,
+          _count: {
+            select: {
+              items: true,
+              user_subscriptions: true,
+            },
+          },
+        },
+      });
 
+      if (!user) throw new NotFoundException('User not found');
 
-   async getItemById(id: string): Promise<unknown> {
-      try {
-        const result = await this._prismaService.item.findUnique({
-          where: { id: id },
+      return {
+        ...user,
+        item_count: user._count.items,
+        subscription_count: user._count.user_subscriptions,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException('Error fetching user profile', error.message);
+    }
+  }
+
+  async getUserItems(id: string, limit?: number, offset?: number): Promise<unknown> {
+    try {
+      limit = Number(limit) || 10;
+      offset = Number(offset) || 0;
+
+      // Fetch items and count in parallel
+      const [items, total] = await Promise.all([
+        this._prismaService.item.findMany({
+          where: { user_id: id, deleted_at: null }, // Only fetch active user items
+          take: limit,
+          skip: offset,
           select: {
             id: true,
             title: true,
             description: true,
             trade_value: true,
             condition: true,
-            is_banner: true,
+            created_at: true,
             category_id: true,
-            subcategory_id: true,
             country_id: true,
             city_id: true,
             city: { select: { id: true, name_ar: true, name_en: true } },
             country: { select: { id: true, name_ar: true, name_en: true } },
-            banners: { select: { id: true, start_date: true, end_date: true, is_active: true } },
             category: {
-              select: {
-                id: true,
-                name_ar: true,
-                name_en: true,
-              },
-            },
-            subcategory: {
               select: {
                 id: true,
                 name_ar: true,
@@ -275,17 +377,57 @@ export class PublicDataService {
               },
             },
           },
-        });
-        this.logger.verbose(`Successfully Retrieved One Item`);
-        const item = { ...result, trade_value: +result.trade_value };
-        return { item, status: 'success', message: 'Find An Items' };
-      } catch (error) {
-        this.logger.error(`Error In Find Item By ID: ${error.message}`, error.stack);
-        throw new HttpException(
-          { status: 'error', message: 'An error occurred while getting items by Id', details: error.message },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-        // return ResponseUtil.error('An error occurred while searching for item', 'FIND_ONE_FAILED', error?.message);
-      }
+          orderBy: { created_at: 'desc' }, // Show newest items first
+        }),
+        this._prismaService.item.count({
+          where: { user_id: id, deleted_at: null }, // Count only user items
+        }),
+      ]);
+
+      this.logger.verbose(`Successfully Retrieved ${items.length} Items for User ${id}`);
+      return { items, total, status: 'success', message: 'Find All Items' };
+    } catch (error) {
+      this.logger.error(`Error In Fetching User Items: ${error.message}`, error.stack);
+      throw new HttpException(
+        { status: 'error', message: 'An error occurred while getting banners', details: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
+  }
+
+  async getUserSubscriptions(id: string, limit: number, offset: number): Promise<unknown> {
+    try {
+      limit = Number(limit) || 10;
+      offset = Number(offset) || 0;
+      const user_subscriptions = await this._prismaService.userSubscriptions.findMany({
+        where: { user_id: id },
+        select: {
+          id: true,
+          payment_details: true,
+          start_date: true,
+          end_date: true,
+          subscription: {
+            select: {
+              title_ar: true,
+              title_en: true,
+              category: true,
+              status: true,
+              price: true,
+            },
+          },
+        },
+        take: limit,
+        skip: offset,
+      });
+      this.logger.verbose(`User Subscriptions Successful Retrieved`);
+      return { user_subscriptions, status: 'success', message: 'Find All User Subscriptions' };
+    } catch (error) {
+      this.logger.error(`Error Retrieved User Subscriptions : ${error.message}`, error.stack);
+      throw new HttpException(
+        { status: 'error', message: 'An error occurred while retrieved user subscriptions', details: error.message },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
 }
