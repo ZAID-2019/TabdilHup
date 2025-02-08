@@ -4,7 +4,6 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ResponseUtil } from 'src/common/response.util';
 import { JwtService } from '@nestjs/jwt';
-import { stat } from 'fs';
 
 @Injectable()
 export class AuthService {
@@ -106,6 +105,6 @@ export class AuthService {
     // Generate the JWT token
     const token = this.jwtService.sign(payload);
 
-    return { statusCode: 200, message: 'Login successful', token: token };
+    return { statusCode: 200, message: 'Login successful', token: token , user_id: user.id, role: user.role};
   }
 }

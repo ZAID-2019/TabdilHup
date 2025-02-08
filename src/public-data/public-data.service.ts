@@ -100,6 +100,16 @@ export class PublicDataService {
           description_ar: true,
           description_en: true,
           image_url: true,
+          children: {
+            select: {
+              id: true,
+              name_ar: true,
+              name_en: true,
+              description_ar: true,
+              description_en: true,
+              image_url: true,
+            },
+          },
         },
       });
       return { categories, status: 'success', message: 'Categories Successful Retrieved' };
