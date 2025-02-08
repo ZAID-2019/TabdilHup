@@ -166,6 +166,7 @@ model Subscription {
   updated_at           DateTime?               @default(now()) @updatedAt
   deleted_at           DateTime?
   subscription_options SubscriptionsOptions[]
+  userSubscriptions    userSubscriptions[]
 
   @@map("subscriptions")
 }
@@ -184,12 +185,15 @@ model SubscriptionsOptions {
 }
 
 model userSubscriptions {
-  id               String    @id @default(uuid())
+  id               String       @id @default(uuid())
   user_id          String
-  user             User      @relation("UserSubscriptions", fields: [user_id], references: [id])
+  user             User         @relation("UserSubscriptions", fields: [user_id], references: [id])
   payment_details  Json
-  subscriptions_id Int
-  created_at       DateTime  @default(now())
+  subscriptions_id String
+  subscription     Subscription @relation(fields: [subscriptions_id], references: [id])
+  start_date       DateTime?    @db.Date
+  end_date         DateTime?    @db.Date
+  created_at       DateTime     @default(now())
   updated_at       DateTime?
   deleted_at       DateTime?
 

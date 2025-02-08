@@ -94,7 +94,6 @@ export class AuthService {
 
     // Check if the password matches
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    console.log({ isPasswordValid });
 
     if (!isPasswordValid) {
       return { error: 'Invalid credentials' };
