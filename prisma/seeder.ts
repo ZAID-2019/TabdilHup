@@ -1,11 +1,11 @@
-import { PrismaClient, Gender , UserRoles } from '@prisma/client';
+import { PrismaClient, Gender, UserRoles } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function seed() {
   try {
-    console.log('Seeding default users...');
+    console.log('🚀 Seeding default users...');
 
     // Hash passwords for all users
     const hashedPasswords = {
@@ -54,17 +54,30 @@ async function seed() {
         gender: Gender.MALE,
         role: UserRoles.USER,
       },
+      {
+        first_name: 'user one',
+        last_name: 'user one',
+        username: 'userone',
+        email: 'userone@example.com',
+        password: hashedPasswords.user,
+        gender: Gender.MALE,
+        role: UserRoles.USER,
+      },
     ];
 
     // Check and insert users if they don't exist
     for (const user of users) {
-      const existingUser = await prisma.user.findUnique({ where: { email: user.email , username: user.username } });
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          OR: [{ email: user.email }, { username: user.username }],
+        },
+      });
 
       if (!existingUser) {
         await prisma.user.create({ data: user });
         console.log(`✅ Created user: ${user.username} (${user.role})`);
       } else {
-        console.log(`⚠️ User ${user.email} already exists, skipping...`);
+        console.log(`⚠️ User with email (${user.email}) or username (${user.username}) already exists, skipping...`);
       }
     }
 
