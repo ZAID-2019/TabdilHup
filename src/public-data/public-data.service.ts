@@ -25,14 +25,14 @@ export class PublicDataService {
             title: true,
           },
           where: {
-            OR: [{ title: { contains: query } }, { description: { contains: query } }],
+            OR: [{ title: { contains: query , mode:'insensitive'} }, { description: { contains: query , mode:'insensitive'} }],
           },
           skip: skip,
           take: take,
         }),
         this._prismaService.item.count({
           where: {
-            OR: [{ title: { contains: query } }, { description: { contains: query } }],
+            OR: [{ title: { contains: query, mode:'insensitive' } }, { description: { contains: query , mode:'insensitive'} }],
           },
         }),
       ]);
