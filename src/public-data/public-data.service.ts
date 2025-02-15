@@ -170,6 +170,7 @@ export class PublicDataService {
               description_en: true,
               image_url: true,
             },
+            where: { deleted_at: null }, // Exclude deleted children
           },
         },
         where: { parent_id: null, deleted_at: null },
