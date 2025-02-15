@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { RegisterDto } from './register.dto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -77,7 +77,6 @@ export class AuthService {
     }
   }
 
-
   // Login method to generate JWT
   async login(emailOrUsername: string, password: string): Promise<any> {
     // Validate user credentials
@@ -89,14 +88,14 @@ export class AuthService {
     });
 
     if (!user) {
-      return { error: 'Invalid credentials' };
+      throw new UnauthorizedException('Invalid credentials'); // Return 401 Unauthorized
     }
 
     // Check if the password matches
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      return { error: 'Invalid credentials' };
+      throw new UnauthorizedException('Invalid credentials'); // Return 401 Unauthorized
     }
 
     // Create the JWT payload
@@ -105,6 +104,27 @@ export class AuthService {
     // Generate the JWT token
     const token = this.jwtService.sign(payload);
 
-    return { statusCode: 200, message: 'Login successful', token: token , user_id: user.id, role: user.role};
+    return { statusCode: 200, message: 'Login successful', token: token, user_id: user.id, role: user.role };
+  }
+
+  async checkUsername(username: string): Promise<{ username: string; isAvailable: boolean }> {
+    // Validate input
+    if (!username || username.trim().length === 0) {
+      throw new BadRequestException('Username is required');
+    }
+
+    try {
+      // Check if username exists (case-insensitive search)
+      const existingUser = await this._prismaService.user.findUnique({
+        where: { username: username.toLowerCase() },
+      });
+
+      return {
+        username,
+        isAvailable: !existingUser, // If user exists, return false, else true
+      };
+    } catch (error) {
+      throw new BadRequestException('Error checking username availability', error);
+    }
   }
 }
