@@ -161,6 +161,16 @@ export class PublicDataService {
           id: true,
           name_ar: true,
           name_en: true,
+          children: {
+            select: {
+              id: true,
+              name_ar: true,
+              name_en: true,
+              description_ar: true,
+              description_en: true,
+              image_url: true,
+            },
+          },
         },
         where: { parent_id: null, deleted_at: null },
       });
