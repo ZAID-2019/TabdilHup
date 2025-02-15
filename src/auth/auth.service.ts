@@ -127,4 +127,36 @@ export class AuthService {
       throw new BadRequestException('Error checking username availability', error);
     }
   }
+
+  /**
+   * Check if an email is available (not already taken)
+   * @param email - The email to check
+   * @returns { email: string; isAvailable: boolean }
+   */
+  async checkEmail(email: string): Promise<{ email: string; isAvailable: boolean }> {
+    // Validate email input
+    if (!email || email.trim().length === 0) {
+      throw new BadRequestException('Email is required');
+    }
+
+    // Validate email format using regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new BadRequestException('Invalid email format');
+    }
+
+    try {
+      // Check if email exists (case-insensitive)
+      const existingUser = await this._prismaService.user.findUnique({
+        where: { email: email.toLowerCase() },
+      });
+
+      return {
+        email,
+        isAvailable: !existingUser, // If user exists, return false, else true
+      };
+    } catch (error) {
+      throw new BadRequestException('Error checking email availability',error);
+    }
+  }
 }

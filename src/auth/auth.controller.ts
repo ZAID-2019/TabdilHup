@@ -24,6 +24,11 @@ export class AuthController {
     return this._authService.checkUsername(username); // Directly call service function
   }
 
+  @Get('check-email')
+  async checkEmail(@Query('email') email: string) {
+    return this._authService.checkEmail(email); // Directly call service function
+  }
+
   // // Login Endpoint
   // @Post('login')
   // async login(
