@@ -331,6 +331,7 @@ export class PublicDataService {
           status: true,
           profile_picture: true,
           birth_date: true,
+          phone_number: true,
           created_at: true,
           updated_at: true,
           _count: {
